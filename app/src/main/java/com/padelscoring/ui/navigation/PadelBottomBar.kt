@@ -92,8 +92,7 @@ fun PadelBottomBar(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .heightIn(min = 64.dp)
-                .padding(vertical = 4.dp),
+                .height(64.dp),
             horizontalArrangement = Arrangement.SpaceAround,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -137,10 +136,10 @@ fun PadelBottomBar(
                             .fillMaxWidth(0.48f)
                             .height(3.dp)
                             .clip(PadelPillShape)
-                            .background(if (isSelected) PadelVolt else PadelObsidian)
+                            .background(if (isSelected) PadelVolt else Color.Transparent)
                     )
 
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.height(2.dp))
 
                     Text(
                         text = item.iconEmoji,
@@ -156,7 +155,7 @@ fun PadelBottomBar(
                         )
                     )
 
-                    Spacer(modifier = Modifier.height(6.dp))
+                    Spacer(modifier = Modifier.height(4.dp))
                 }
             }
         }
