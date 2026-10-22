@@ -24,3 +24,7 @@ app/google-services.json
 .vscode/
 supabase/.temp/
 .agent_*.txt
+
+# Local build artifacts
+build-artifacts/
+*.apk
