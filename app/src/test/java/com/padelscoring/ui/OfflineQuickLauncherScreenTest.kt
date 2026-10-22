@@ -31,15 +31,15 @@ class OfflineQuickLauncherScreenTest {
         composeTestRule.onNodeWithText("GUEST ROSTER (8 PLAYERS)").assertExists()
 
         // Tap 4-player chip
-        composeTestRule.onNodeWithText("4").performClick()
+        composeTestRule.onNodeWithTag("chip_players_4").performClick()
         composeTestRule.onNodeWithText("GUEST ROSTER (4 PLAYERS)").assertExists()
 
         // Tap 12-player chip
-        composeTestRule.onNodeWithText("12").performClick()
+        composeTestRule.onNodeWithTag("chip_players_12").performClick()
         composeTestRule.onNodeWithText("GUEST ROSTER (12 PLAYERS)").assertExists()
 
         // Tap 16-player chip
-        composeTestRule.onNodeWithText("16").performClick()
+        composeTestRule.onNodeWithTag("chip_players_16").performClick()
         composeTestRule.onNodeWithText("GUEST ROSTER (16 PLAYERS)").assertExists()
     }
 
@@ -87,7 +87,7 @@ class OfflineQuickLauncherScreenTest {
         }
 
         // Select 4 players
-        composeTestRule.onNodeWithText("4").performClick()
+        composeTestRule.onNodeWithTag("chip_players_4").performClick()
 
         // Select 24 PTS
         composeTestRule.onNodeWithText("24 PTS").performClick()
