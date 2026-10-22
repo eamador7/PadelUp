@@ -212,7 +212,7 @@ fun MatchConfirmationScreen(
 
                 // Dispute Link
                 Text(
-                    text = "Incorrect score? Dispute this match",
+                    text = "Dispute Score • Incorrect score or match details",
                     style = PadelTypography.labelMedium.copy(
                         color = PadelAmberTiebreak,
                         fontWeight = FontWeight.SemiBold
