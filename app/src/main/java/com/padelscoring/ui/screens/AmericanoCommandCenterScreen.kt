@@ -1,9 +1,9 @@
 package com.padelscoring.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -33,24 +33,29 @@ data class AmericanoPlayerStanding(
 @Composable
 fun AmericanoCommandCenterScreen(
     viewModel: AmericanoTournamentViewModel? = null,
+    initialRound: Int = 1,
+    initialActiveCourt: Int? = null,
+    initialMatchesFinished: Boolean = false,
     onNavigateBack: () -> Unit = {},
     onMatchSelected: (courtNumber: Int) -> Unit = {}
 ) {
     val haptics = rememberPadelHaptics()
     val vmState = viewModel?.uiState?.collectAsState()?.value
 
-    var mockCurrentRound by remember { mutableIntStateOf(3) }
+    var mockCurrentRound by remember { mutableIntStateOf(initialRound) }
     val mockTotalRounds = 7
     val mockTargetPoints = 32
+
+    var activeScoringCourt by remember { mutableStateOf<Int?>(initialActiveCourt) }
 
     // Interactive fallback court state for standalone preview
     var court1ScoreA by remember { mutableIntStateOf(18) }
     var court1ScoreB by remember { mutableIntStateOf(14) }
-    var court1Finished by remember { mutableStateOf(false) }
+    var court1Finished by remember { mutableStateOf(initialMatchesFinished) }
 
     var court2ScoreA by remember { mutableIntStateOf(16) }
     var court2ScoreB by remember { mutableIntStateOf(16) }
-    var court2Finished by remember { mutableStateOf(false) }
+    var court2Finished by remember { mutableStateOf(initialMatchesFinished) }
 
     var selectedTab by remember { mutableIntStateOf(0) } // 0 = Active Courts, 1 = Live Standings
 
@@ -73,6 +78,7 @@ fun AmericanoCommandCenterScreen(
     val targetPoints = vmState?.targetPoints ?: mockTargetPoints
     val standings = vmState?.standings?.takeIf { it.isNotEmpty() } ?: mockStandings
     val courtMatches = vmState?.courtMatches ?: emptyList()
+    val canGenerateNextRound = vmState?.canGenerateNextRound ?: (court1Finished && court2Finished)
 
     Scaffold(
         containerColor = PadelObsidianDarkest,
@@ -163,6 +169,10 @@ fun AmericanoCommandCenterScreen(
                         .weight(1f)
                         .clip(PadelShapes.small)
                         .background(if (selectedTab == 0) PadelVolt else PadelSurface)
+                        .clickable {
+                            haptics.tick()
+                            selectedTab = 0
+                        }
                         .padding(vertical = 10.dp),
                     contentAlignment = Alignment.Center
                 ) {
@@ -181,6 +191,10 @@ fun AmericanoCommandCenterScreen(
                         .weight(1f)
                         .clip(PadelShapes.small)
                         .background(if (selectedTab == 1) PadelVolt else PadelSurface)
+                        .clickable {
+                            haptics.tick()
+                            selectedTab = 1
+                        }
                         .padding(vertical = 10.dp),
                     contentAlignment = Alignment.Center
                 ) {
@@ -213,27 +227,32 @@ fun AmericanoCommandCenterScreen(
                                     teamBPlayers = match.teamBNames,
                                     currentScore = "${match.teamAScore} - ${match.teamBScore}",
                                     isCompleted = match.isCompleted,
-                                    onClick = { onMatchSelected(match.courtNumber) }
+                                    onClick = {
+                                        activeScoringCourt = if (activeScoringCourt == match.courtNumber) null else match.courtNumber
+                                        onMatchSelected(match.courtNumber)
+                                    }
                                 )
                             }
 
-                            item(key = "${match.matchId}_score") {
-                                PadelQuickScorePad(
-                                    teamAName = "${match.teamANames.first} / ${match.teamANames.second}",
-                                    teamBName = "${match.teamBNames.first} / ${match.teamBNames.second}",
-                                    scoreA = match.teamAScore,
-                                    scoreB = match.teamBScore,
-                                    targetPoints = targetPoints,
-                                    onScoreAChanged = { newA ->
-                                        val newB = (targetPoints - newA).coerceAtLeast(0)
-                                        viewModel?.onScoreChanged(match.matchId, newA, newB)
-                                    },
-                                    onScoreBChanged = { newB ->
-                                        val newA = (targetPoints - newB).coerceAtLeast(0)
-                                        viewModel?.onScoreChanged(match.matchId, newA, newB)
-                                    },
-                                    haptics = haptics
-                                )
+                            if (activeScoringCourt == match.courtNumber) {
+                                item(key = "${match.matchId}_score") {
+                                    PadelQuickScorePad(
+                                        teamAName = "${match.teamANames.first} / ${match.teamANames.second}",
+                                        teamBName = "${match.teamBNames.first} / ${match.teamBNames.second}",
+                                        scoreA = match.teamAScore,
+                                        scoreB = match.teamBScore,
+                                        targetPoints = targetPoints,
+                                        onScoreAChanged = { newA ->
+                                            val newB = (targetPoints - newA).coerceAtLeast(0)
+                                            viewModel?.onScoreChanged(match.matchId, newA, newB)
+                                        },
+                                        onScoreBChanged = { newB ->
+                                            val newA = (targetPoints - newB).coerceAtLeast(0)
+                                            viewModel?.onScoreChanged(match.matchId, newA, newB)
+                                        },
+                                        haptics = haptics
+                                    )
+                                }
                             }
                         }
                     } else {
@@ -245,21 +264,37 @@ fun AmericanoCommandCenterScreen(
                                 teamBPlayers = Pair("Juan Lebrón", "Agustín Tapia"),
                                 currentScore = "$court1ScoreA - $court1ScoreB",
                                 isCompleted = court1Finished,
-                                onClick = { onMatchSelected(1) }
+                                onClick = {
+                                    activeScoringCourt = if (activeScoringCourt == 1) null else 1
+                                    onMatchSelected(1)
+                                }
                             )
                         }
 
-                        item {
-                            PadelQuickScorePad(
-                                teamAName = "Galán / Coello",
-                                teamBName = "Lebrón / Tapia",
-                                scoreA = court1ScoreA,
-                                scoreB = court1ScoreB,
-                                targetPoints = targetPoints,
-                                onScoreAChanged = { court1ScoreA = it },
-                                onScoreBChanged = { court1ScoreB = it },
-                                haptics = haptics
-                            )
+                        if (activeScoringCourt == 1) {
+                            item {
+                                PadelQuickScorePad(
+                                    teamAName = "Galán / Coello",
+                                    teamBName = "Lebrón / Tapia",
+                                    scoreA = court1ScoreA,
+                                    scoreB = court1ScoreB,
+                                    targetPoints = targetPoints,
+                                    onScoreAChanged = { newA ->
+                                        court1ScoreA = newA
+                                        court1ScoreB = (targetPoints - newA).coerceAtLeast(0)
+                                        val p1 = mockStandings.find { it.id == "1" }
+                                        if (p1 != null) {
+                                            val idx = mockStandings.indexOf(p1)
+                                            mockStandings[idx] = p1.copy(totalPoints = 42 + (newA - 18))
+                                        }
+                                    },
+                                    onScoreBChanged = { newB ->
+                                        court1ScoreB = newB
+                                        court1ScoreA = (targetPoints - newB).coerceAtLeast(0)
+                                    },
+                                    haptics = haptics
+                                )
+                            }
                         }
 
                         item {
@@ -269,28 +304,56 @@ fun AmericanoCommandCenterScreen(
                                 teamBPlayers = Pair("Martín Di Nenno", "F. Belasteguín"),
                                 currentScore = "$court2ScoreA - $court2ScoreB",
                                 isCompleted = court2Finished,
-                                onClick = { onMatchSelected(2) }
+                                onClick = {
+                                    activeScoringCourt = if (activeScoringCourt == 2) null else 2
+                                    onMatchSelected(2)
+                                }
                             )
+                        }
+
+                        if (activeScoringCourt == 2) {
+                            item {
+                                PadelQuickScorePad(
+                                    teamAName = "Navarro / Stupaczuk",
+                                    teamBName = "Di Nenno / Belasteguín",
+                                    scoreA = court2ScoreA,
+                                    scoreB = court2ScoreB,
+                                    targetPoints = targetPoints,
+                                    onScoreAChanged = { newA ->
+                                        court2ScoreA = newA
+                                        court2ScoreB = (targetPoints - newA).coerceAtLeast(0)
+                                    },
+                                    onScoreBChanged = { newB ->
+                                        court2ScoreB = newB
+                                        court2ScoreA = (targetPoints - newB).coerceAtLeast(0)
+                                    },
+                                    haptics = haptics
+                                )
+                            }
                         }
                     }
 
-                    // Next Round Generation Trigger Banner
-                    item {
-                        PadelNextRoundBanner(
-                            nextRoundNumber = currentRound + 1,
-                            onGenerateNextRound = {
-                                haptics.heavyConfirm()
-                                if (viewModel != null) {
-                                    viewModel.onGenerateNextRound()
-                                } else if (mockCurrentRound < mockTotalRounds) {
-                                    mockCurrentRound++
-                                    court1ScoreA = 0
-                                    court1ScoreB = 0
-                                    court2ScoreA = 0
-                                    court2ScoreB = 0
+                    // Next Round Generation Trigger Banner (Gated on all matches completed)
+                    if (canGenerateNextRound) {
+                        item {
+                            PadelNextRoundBanner(
+                                nextRoundNumber = currentRound + 1,
+                                onGenerateNextRound = {
+                                    haptics.heavyConfirm()
+                                    if (viewModel != null) {
+                                        viewModel.onGenerateNextRound()
+                                    } else if (mockCurrentRound < mockTotalRounds) {
+                                        mockCurrentRound++
+                                        court1ScoreA = 0
+                                        court1ScoreB = 0
+                                        court2ScoreA = 0
+                                        court2ScoreB = 0
+                                        court1Finished = false
+                                        court2Finished = false
+                                    }
                                 }
-                            }
-                        )
+                            )
+                        }
                     }
                 }
             } else {

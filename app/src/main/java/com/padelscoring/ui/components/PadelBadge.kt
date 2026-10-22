@@ -14,10 +14,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.padelscoring.ui.theme.*
+import java.util.Locale
 
 /**
  * Playtomic-inspired Dynamic Level Badge with circular confidence ring.
@@ -61,7 +64,7 @@ fun DynamicLevelBadge(
             // Numeric Level
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
-                    text = String.format("%.2f", level),
+                    text = String.format(Locale.US, "%.2f", level),
                     style = PadelTypography.headlineMedium.copy(
                         fontWeight = FontWeight.ExtraBold,
                         fontSize = 20.sp,
@@ -83,7 +86,7 @@ fun DynamicLevelBadge(
         // Progression Delta Pill
         if (delta != null) {
             val isPositive = delta >= 0
-            val deltaText = if (isPositive) "+${String.format("%.2f", delta)}" else String.format("%.2f", delta)
+            val deltaText = if (isPositive) "+${String.format(Locale.US, "%.2f", delta)}" else String.format(Locale.US, "%.2f", delta)
             val pillBg = if (isPositive) PadelVoltSubtle else PadelRedSubtle
             val pillColor = if (isPositive) PadelVolt else PadelRedFault
 
@@ -224,6 +227,7 @@ fun FormDot(
 ) {
     val bg = if (isWin) PadelVolt else PadelSurfaceElevated
     val textColor = if (isWin) PadelTextInverse else PadelTextMuted
+    val badgeContentDescription = if (isWin) "Win badge" else "Loss badge"
 
     Box(
         modifier = modifier
@@ -234,7 +238,10 @@ fun FormDot(
                 1.dp,
                 if (isWin) PadelVolt else PadelBorderHairline,
                 CircleShape
-            ),
+            )
+            .semantics {
+                contentDescription = badgeContentDescription
+            },
         contentAlignment = Alignment.Center
     ) {
         Text(
