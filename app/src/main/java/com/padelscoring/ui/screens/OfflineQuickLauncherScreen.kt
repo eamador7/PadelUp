@@ -38,9 +38,14 @@ fun OfflineQuickLauncherScreen(
     val localPlayerNames = remember {
         mutableStateListOf(
             "Player 1", "Player 2", "Player 3", "Player 4",
-            "Player 5", "Player 6", "Player 7", "Player 8"
+            "Player 5", "Player 6", "Player 7", "Player 8",
+            "Player 9", "Player 10", "Player 11", "Player 12",
+            "Player 13", "Player 14", "Player 15", "Player 16"
         )
     }
+
+    var editingPlayerIndex by remember { mutableStateOf<Int?>(null) }
+    var editingPlayerName by remember { mutableStateOf("") }
 
     val selectedPlayerCount = vmState?.selectedPlayerCount ?: localPlayerCount
     val selectedTargetPoints = vmState?.selectedTargetPoints ?: localTargetPoints
@@ -49,21 +54,69 @@ fun OfflineQuickLauncherScreen(
     Scaffold(
         containerColor = PadelObsidianDarkest,
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "OFFLINE QUICK LAUNCHER",
-                        style = PadelTypography.labelLarge.copy(
-                            fontWeight = FontWeight.ExtraBold,
-                            letterSpacing = 1.sp,
-                            color = PadelTextPrimary
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(PadelObsidian)
+                    .statusBarsPadding()
+                    .displayCutoutPadding()
+                    .padding(horizontal = 20.dp, vertical = 14.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            PadelRacketIcon(size = 18.dp)
+                            Text(
+                                text = "OFFLINE QUICK LAUNCHER",
+                                style = PadelTypography.labelSmall.copy(
+                                    fontWeight = FontWeight.ExtraBold,
+                                    letterSpacing = 1.2.sp,
+                                    color = PadelVolt
+                                )
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = "Instant Tournament Setup",
+                            style = PadelTypography.headlineMedium.copy(
+                                fontWeight = FontWeight.ExtraBold,
+                                color = PadelTextPrimary
+                            )
                         )
-                    )
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = PadelObsidian
-                )
-            )
+                    }
+
+                    // Estimated Duration Badge
+                    val estimatedMinutes = when (selectedPlayerCount) {
+                        4 -> 35
+                        8 -> 70
+                        12 -> 105
+                        else -> 140
+                    }
+                    Box(
+                        modifier = Modifier
+                            .clip(PadelPillShape)
+                            .background(PadelSurfaceElevated)
+                            .border(1.dp, PadelBorderHairline, PadelPillShape)
+                            .padding(horizontal = 10.dp, vertical = 5.dp)
+                    ) {
+                        Text(
+                            text = "⏱ ~$estimatedMinutes MIN",
+                            style = PadelTypography.labelSmall.copy(
+                                color = PadelVolt,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 10.sp
+                            )
+                        )
+                    }
+                }
+            }
         }
     ) { innerPadding ->
         LazyColumn(
@@ -71,7 +124,7 @@ fun OfflineQuickLauncherScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
                 .padding(horizontal = 20.dp),
-            verticalArrangement = Arrangement.spacedBy(18.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
             contentPadding = PaddingValues(top = 16.dp, bottom = 24.dp)
         ) {
             // Privacy Guarantee Badge
@@ -89,13 +142,27 @@ fun OfflineQuickLauncherScreen(
                         .border(1.dp, PadelBorderHairline, PadelCourtCardShape)
                         .padding(16.dp)
                 ) {
-                    Text(
-                        text = "TOURNAMENT ROSTER SIZE",
-                        style = PadelTypography.labelSmall.copy(
-                            color = PadelTextMuted,
-                            letterSpacing = 1.sp
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "TOURNAMENT ROSTER SIZE",
+                            style = PadelTypography.labelSmall.copy(
+                                color = PadelTextMuted,
+                                letterSpacing = 1.sp
+                            )
                         )
-                    )
+                        Text(
+                            text = "${selectedPlayerCount / 4} ${if (selectedPlayerCount == 4) "COURT" else "COURTS"}",
+                            style = PadelTypography.labelSmall.copy(
+                                color = PadelTurfCyan,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 10.sp
+                            )
+                        )
+                    }
 
                     Spacer(modifier = Modifier.height(12.dp))
 
@@ -105,10 +172,9 @@ fun OfflineQuickLauncherScreen(
                     ) {
                         playerCountOptions.forEach { count ->
                             val isSelected = selectedPlayerCount == count
-                            Box(
+                            Column(
                                 modifier = Modifier
                                     .weight(1f)
-                                    .height(48.dp)
                                     .testTag("chip_players_$count")
                                     .clip(PadelShapes.medium)
                                     .background(if (isSelected) PadelVolt else PadelSurfaceElevated)
@@ -127,14 +193,23 @@ fun OfflineQuickLauncherScreen(
                                                 localPlayerNames.add("Player ${localPlayerNames.size + 1}")
                                             }
                                         }
-                                    },
-                                contentAlignment = Alignment.Center
+                                    }
+                                    .padding(vertical = 10.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
                             ) {
                                 Text(
                                     text = "$count",
                                     style = PadelTypography.titleLarge.copy(
                                         fontWeight = FontWeight.ExtraBold,
                                         color = if (isSelected) PadelTextInverse else PadelTextPrimary
+                                    )
+                                )
+                                Text(
+                                    text = "PLAYERS",
+                                    style = PadelTypography.labelSmall.copy(
+                                        fontSize = 8.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = if (isSelected) PadelTextInverse.copy(alpha = 0.8f) else PadelTextMuted
                                     )
                                 )
                             }
@@ -153,13 +228,32 @@ fun OfflineQuickLauncherScreen(
                         .border(1.dp, PadelBorderHairline, PadelCourtCardShape)
                         .padding(16.dp)
                 ) {
-                    Text(
-                        text = "TARGET POINTS PER MATCH",
-                        style = PadelTypography.labelSmall.copy(
-                            color = PadelTextMuted,
-                            letterSpacing = 1.sp
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "TARGET POINTS PER MATCH",
+                            style = PadelTypography.labelSmall.copy(
+                                color = PadelTextMuted,
+                                letterSpacing = 1.sp
+                            )
                         )
-                    )
+                        val matchFormatName = when (selectedTargetPoints) {
+                            21 -> "SPRINT"
+                            24 -> "STANDARD"
+                            else -> "PRO MASTERS"
+                        }
+                        Text(
+                            text = matchFormatName,
+                            style = PadelTypography.labelSmall.copy(
+                                color = PadelVolt,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 10.sp
+                            )
+                        )
+                    }
 
                     Spacer(modifier = Modifier.height(12.dp))
 
@@ -225,13 +319,27 @@ fun OfflineQuickLauncherScreen(
 
             // Quick Guest Name Entry
             item {
-                Text(
-                    text = "GUEST ROSTER ($selectedPlayerCount PLAYERS)",
-                    style = PadelTypography.labelSmall.copy(
-                        color = PadelTextMuted,
-                        letterSpacing = 1.sp
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "GUEST ROSTER ($selectedPlayerCount PLAYERS)",
+                        style = PadelTypography.labelSmall.copy(
+                            color = PadelTextMuted,
+                            letterSpacing = 1.sp
+                        )
                     )
-                )
+                    Text(
+                        text = "TAP TO RENAME",
+                        style = PadelTypography.labelSmall.copy(
+                            color = PadelVolt,
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    )
+                }
             }
 
             itemsIndexed(playerRoster.take(selectedPlayerCount)) { index, name ->
@@ -241,7 +349,11 @@ fun OfflineQuickLauncherScreen(
                         .clip(PadelShapes.medium)
                         .background(PadelSurface)
                         .border(1.dp, PadelBorderHairline, PadelShapes.medium)
-                        .padding(horizontal = 14.dp, vertical = 10.dp),
+                        .clickable {
+                            editingPlayerIndex = index
+                            editingPlayerName = name
+                        }
+                        .padding(horizontal = 14.dp, vertical = 12.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
@@ -251,16 +363,17 @@ fun OfflineQuickLauncherScreen(
                     ) {
                         Box(
                             modifier = Modifier
-                                .size(28.dp)
+                                .size(32.dp)
                                 .clip(CircleShape)
-                                .background(PadelSurfaceElevated),
+                                .background(PadelSurfaceElevated)
+                                .border(1.dp, PadelBorderHairline, CircleShape),
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
                                 text = "${index + 1}",
                                 style = PadelTypography.labelSmall.copy(
                                     color = PadelVolt,
-                                    fontWeight = FontWeight.Bold
+                                    fontWeight = FontWeight.ExtraBold
                                 )
                             )
                         }
@@ -275,17 +388,17 @@ fun OfflineQuickLauncherScreen(
 
                     Box(
                         modifier = Modifier
-                            .minimumInteractiveComponentSize()
-                            .clickable {
-                                // Quick rename modal or inline edit
-                            },
-                        contentAlignment = Alignment.CenterEnd
+                            .clip(PadelPillShape)
+                            .background(PadelSurfaceElevated)
+                            .padding(horizontal = 8.dp, vertical = 4.dp),
+                        contentAlignment = Alignment.Center
                     ) {
                         Text(
                             text = "Edit ✎",
                             style = PadelTypography.labelSmall.copy(
                                 color = PadelTextMuted,
-                                fontWeight = FontWeight.Medium
+                                fontWeight = FontWeight.Medium,
+                                fontSize = 10.sp
                             )
                         )
                     }
@@ -293,4 +406,60 @@ fun OfflineQuickLauncherScreen(
             }
         }
     }
+
+    // Modal dialogue to rename a guest player
+    if (editingPlayerIndex != null) {
+        val idx = editingPlayerIndex!!
+        AlertDialog(
+            onDismissRequest = { editingPlayerIndex = null },
+            title = {
+                Text(
+                    text = "Player ${idx + 1} Name",
+                    style = PadelTypography.titleMedium.copy(
+                        fontWeight = FontWeight.Bold,
+                        color = PadelTextPrimary
+                    )
+                )
+            },
+            text = {
+                OutlinedTextField(
+                    value = editingPlayerName,
+                    onValueChange = { editingPlayerName = it },
+                    singleLine = true,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = PadelTextPrimary,
+                        unfocusedTextColor = PadelTextPrimary,
+                        focusedBorderColor = PadelVolt,
+                        unfocusedBorderColor = PadelBorderHairline,
+                        cursorColor = PadelVolt
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        val trimmed = editingPlayerName.trim()
+                        if (trimmed.isNotEmpty()) {
+                            if (viewModel != null) {
+                                viewModel.updatePlayerName(idx, trimmed)
+                            } else if (idx < localPlayerNames.size) {
+                                localPlayerNames[idx] = trimmed
+                            }
+                        }
+                        editingPlayerIndex = null
+                    }
+                ) {
+                    Text("SAVE", color = PadelVolt, fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { editingPlayerIndex = null }) {
+                    Text("CANCEL", color = PadelTextMuted)
+                }
+            },
+            containerColor = PadelSurfaceElevated
+        )
+    }
+}
 }

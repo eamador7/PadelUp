@@ -12,6 +12,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -45,24 +47,72 @@ fun PlayerProfileScreen(
     val displayRecentForm = vmState?.recentForm?.takeIf { it.isNotEmpty() } ?: recentForm
     val displayConfidenceProgress = vmState?.confidenceProgress ?: 0.92f
 
+    val playerInitials = displayPlayerName.split(" ")
+        .mapNotNull { it.firstOrNull()?.toString() }
+        .take(2)
+        .joinToString("")
+
     Scaffold(
         containerColor = PadelObsidianDarkest,
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "PLAYER STATS & PROFILE",
-                        style = PadelTypography.labelLarge.copy(
-                            fontWeight = FontWeight.ExtraBold,
-                            letterSpacing = 1.sp,
-                            color = PadelTextPrimary
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(PadelObsidian)
+                    .statusBarsPadding()
+                    .displayCutoutPadding()
+                    .padding(horizontal = 20.dp, vertical = 14.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            PadelRacketIcon(size = 18.dp)
+                            Text(
+                                text = "ATHLETE PASSPORT",
+                                style = PadelTypography.labelSmall.copy(
+                                    fontWeight = FontWeight.ExtraBold,
+                                    letterSpacing = 1.2.sp,
+                                    color = PadelVolt
+                                )
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = "PLAYER STATS & PROFILE",
+                            style = PadelTypography.labelLarge.copy(
+                                fontWeight = FontWeight.ExtraBold,
+                                letterSpacing = 1.sp,
+                                color = PadelTextPrimary
+                            )
                         )
-                    )
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = PadelObsidian
-                )
-            )
+                    }
+
+                    // Level Tier Pill
+                    Box(
+                        modifier = Modifier
+                            .clip(PadelPillShape)
+                            .background(PadelVoltSubtle)
+                            .border(1.dp, PadelVoltBorder, PadelPillShape)
+                            .padding(horizontal = 10.dp, vertical = 5.dp)
+                    ) {
+                        Text(
+                            text = "PRO DIVISION",
+                            style = PadelTypography.labelSmall.copy(
+                                color = PadelVolt,
+                                fontWeight = FontWeight.ExtraBold,
+                                fontSize = 10.sp
+                            )
+                        )
+                    }
+                }
+            }
         }
     ) { innerPadding ->
         Column(
@@ -78,19 +128,49 @@ fun PlayerProfileScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(PadelCourtCardShape)
-                    .background(PadelSurface)
+                    .background(
+                        Brush.verticalGradient(
+                            listOf(Color(0xFF1B2433), PadelSurface)
+                        )
+                    )
                     .border(1.dp, PadelBorderHairline, PadelCourtCardShape)
                     .padding(20.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Circular Level Badge
-                DynamicLevelBadge(
-                    level = displayLevel,
-                    delta = displayDelta,
-                    confidenceProgress = displayConfidenceProgress
-                )
+                // Top Row: Avatar & Dynamic Level Ring
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // Initials Badge
+                    Box(
+                        modifier = Modifier
+                            .size(72.dp)
+                            .clip(CircleShape)
+                            .background(PadelSurfaceElevated)
+                            .border(2.dp, PadelVolt, CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = playerInitials,
+                            style = PadelTypography.headlineLarge.copy(
+                                color = PadelVolt,
+                                fontWeight = FontWeight.ExtraBold,
+                                fontSize = 26.sp
+                            )
+                        )
+                    }
 
-                Spacer(modifier = Modifier.height(14.dp))
+                    // Circular Level Badge with Animated Arc & Delta
+                    DynamicLevelBadge(
+                        level = displayLevel,
+                        delta = displayDelta,
+                        confidenceProgress = displayConfidenceProgress
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
 
                 Text(
                     text = displayPlayerName,
@@ -100,7 +180,7 @@ fun PlayerProfileScreen(
                     )
                 )
 
-                Spacer(modifier = Modifier.height(6.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
                 // Tactical Court Side Badge
                 Row(
@@ -110,7 +190,7 @@ fun PlayerProfileScreen(
                     CourtSideBadge(side = displayPreferredSide)
                     Text(
                         text = if (displayPreferredSide == "REVÉS") "Left Side • Aggressive Finisher" else "Right Side • Tactical Builder",
-                        style = PadelTypography.bodySmall.copy(color = PadelTextMuted)
+                        style = PadelTypography.bodySmall.copy(color = PadelTextSecondary)
                     )
                 }
             }
@@ -124,13 +204,27 @@ fun PlayerProfileScreen(
                     .border(1.dp, PadelBorderHairline, PadelCourtCardShape)
                     .padding(16.dp)
             ) {
-                Text(
-                    text = "LAST 10 MATCHES FORM",
-                    style = PadelTypography.labelSmall.copy(
-                        letterSpacing = 1.sp,
-                        color = PadelTextMuted
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "LAST 10 MATCHES FORM",
+                        style = PadelTypography.labelSmall.copy(
+                            letterSpacing = 1.sp,
+                            color = PadelTextMuted
+                        )
                     )
-                )
+                    Text(
+                        text = "🔥 ${displayCurrentStreak}W STREAK",
+                        style = PadelTypography.labelSmall.copy(
+                            color = PadelVolt,
+                            fontWeight = FontWeight.ExtraBold,
+                            fontSize = 11.sp
+                        )
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(12.dp))
 
@@ -161,7 +255,10 @@ fun PlayerProfileScreen(
                 ) {
                     Text(
                         text = "WIN RATE",
-                        style = PadelTypography.labelSmall.copy(color = PadelTextMuted)
+                        style = PadelTypography.labelSmall.copy(
+                            color = PadelTextMuted,
+                            letterSpacing = 0.8.sp
+                        )
                     )
                     Spacer(modifier = Modifier.height(6.dp))
                     Text(
@@ -188,7 +285,10 @@ fun PlayerProfileScreen(
                 ) {
                     Text(
                         text = "BEST STREAK",
-                        style = PadelTypography.labelSmall.copy(color = PadelTextMuted)
+                        style = PadelTypography.labelSmall.copy(
+                            color = PadelTextMuted,
+                            letterSpacing = 0.8.sp
+                        )
                     )
                     Spacer(modifier = Modifier.height(6.dp))
                     Text(
@@ -214,19 +314,33 @@ fun PlayerProfileScreen(
                     .border(1.dp, PadelBorderHairline, PadelCourtCardShape)
                     .padding(16.dp)
             ) {
-                Text(
-                    text = "AMERICANO TROPHIES & BADGES",
-                    style = PadelTypography.labelSmall.copy(
-                        letterSpacing = 1.sp,
-                        color = PadelTextMuted
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "AMERICANO TROPHIES & BADGES",
+                        style = PadelTypography.labelSmall.copy(
+                            letterSpacing = 1.sp,
+                            color = PadelTextMuted
+                        )
                     )
-                )
+                    Text(
+                        text = "3 UNLOCKED",
+                        style = PadelTypography.labelSmall.copy(
+                            color = PadelGoldCrown,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 10.sp
+                        )
+                    )
+                }
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(14.dp))
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     // Trophy 1
                     Box(
@@ -234,6 +348,7 @@ fun PlayerProfileScreen(
                             .weight(1f)
                             .clip(PadelShapes.small)
                             .background(PadelSurfaceElevated)
+                            .border(1.dp, PadelGoldCrown.copy(alpha = 0.3f), PadelShapes.small)
                             .padding(12.dp),
                         contentAlignment = Alignment.Center
                     ) {
@@ -243,7 +358,7 @@ fun PlayerProfileScreen(
                             Text(
                                 text = "4x Champion",
                                 style = PadelTypography.labelSmall.copy(
-                                    color = PadelVolt,
+                                    color = PadelGoldCrown,
                                     fontWeight = FontWeight.Bold
                                 )
                             )
@@ -256,6 +371,7 @@ fun PlayerProfileScreen(
                             .weight(1f)
                             .clip(PadelShapes.small)
                             .background(PadelSurfaceElevated)
+                            .border(1.dp, PadelTurfCyan.copy(alpha = 0.3f), PadelShapes.small)
                             .padding(12.dp),
                         contentAlignment = Alignment.Center
                     ) {
@@ -278,6 +394,7 @@ fun PlayerProfileScreen(
                             .weight(1f)
                             .clip(PadelShapes.small)
                             .background(PadelSurfaceElevated)
+                            .border(1.dp, PadelBorderHairline, PadelShapes.small)
                             .padding(12.dp),
                         contentAlignment = Alignment.Center
                     ) {

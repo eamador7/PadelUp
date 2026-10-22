@@ -442,6 +442,18 @@ fun AmericanoCommandCenterScreen(
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                     contentPadding = PaddingValues(bottom = 24.dp)
                 ) {
+                    // Top-3 Athlete Celebratory Podium (Peak-End experience)
+                    if (standings.size >= 3) {
+                        item(key = "podium_card") {
+                            TournamentPodiumCard(
+                                firstPlayer = Pair(standings[0].name, standings[0].totalPoints),
+                                secondPlayer = Pair(standings[1].name, standings[1].totalPoints),
+                                thirdPlayer = Pair(standings[2].name, standings[2].totalPoints),
+                                modifier = Modifier.padding(bottom = 6.dp)
+                            )
+                        }
+                    }
+
                     itemsIndexed(standings, key = { _, item -> item.id }) { _, standing ->
                         PadelLeaderboardRow(
                             rank = standing.rank,

@@ -56,21 +56,67 @@ fun MatchConfirmationScreen(
     Scaffold(
         containerColor = PadelObsidianDarkest,
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "MATCH VERIFICATION",
-                        style = PadelTypography.labelLarge.copy(
-                            fontWeight = FontWeight.ExtraBold,
-                            letterSpacing = 1.sp,
-                            color = PadelTextPrimary
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(PadelObsidian)
+                    .statusBarsPadding()
+                    .displayCutoutPadding()
+                    .padding(horizontal = 20.dp, vertical = 14.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            PadelRacketIcon(size = 18.dp)
+                            Text(
+                                text = "OFFICIAL SCORECARD",
+                                style = PadelTypography.labelSmall.copy(
+                                    fontWeight = FontWeight.ExtraBold,
+                                    letterSpacing = 1.2.sp,
+                                    color = PadelVolt
+                                )
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = "MATCH VERIFICATION",
+                            style = PadelTypography.labelLarge.copy(
+                                fontWeight = FontWeight.ExtraBold,
+                                letterSpacing = 1.sp,
+                                color = PadelTextPrimary
+                            )
                         )
-                    )
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = PadelObsidian
-                )
-            )
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .clip(PadelPillShape)
+                            .background(if (isDisputed) PadelRedSubtle else PadelVoltSubtle)
+                            .border(
+                                1.dp,
+                                if (isDisputed) PadelRedFault.copy(alpha = 0.4f) else PadelVoltBorder,
+                                PadelPillShape
+                            )
+                            .padding(horizontal = 10.dp, vertical = 5.dp)
+                    ) {
+                        Text(
+                            text = if (isDisputed) "DISPUTED" else "COURT $displayCourtNumber",
+                            style = PadelTypography.labelSmall.copy(
+                                color = if (isDisputed) PadelRedFault else PadelVolt,
+                                fontWeight = FontWeight.ExtraBold,
+                                fontSize = 10.sp
+                            )
+                        )
+                    }
+                }
+            }
         }
     ) { innerPadding ->
         Column(
@@ -112,6 +158,69 @@ fun MatchConfirmationScreen(
                             letterSpacing = 0.8.sp
                         )
                     )
+                }
+            }
+
+            // Winner highlight banner (Peak emotional design)
+            val isTeamAWinner = displayFinalScoreA > displayFinalScoreB
+            val isTeamBWinner = displayFinalScoreB > displayFinalScoreA
+            val isDraw = displayFinalScoreA == displayFinalScoreB
+
+            if (!isDraw) {
+                val winnerName = if (isTeamAWinner) "TEAM A VICTORY" else "TEAM B VICTORY"
+                val winnerPlayers = if (isTeamAWinner) "${displayTeamA.first} & ${displayTeamA.second}" else "${displayTeamB.first} & ${displayTeamB.second}"
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(PadelShapes.medium)
+                        .background(PadelVoltSubtle)
+                        .border(1.dp, PadelVoltBorder, PadelShapes.medium)
+                        .padding(horizontal = 16.dp, vertical = 10.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Text(text = "🏆", fontSize = 18.sp)
+                            Column {
+                                Text(
+                                    text = winnerName,
+                                    style = PadelTypography.labelSmall.copy(
+                                        color = PadelVolt,
+                                        fontWeight = FontWeight.ExtraBold,
+                                        letterSpacing = 1.sp
+                                    )
+                                )
+                                Text(
+                                    text = winnerPlayers,
+                                    style = PadelTypography.bodySmall.copy(
+                                        color = PadelTextPrimary,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                )
+                            }
+                        }
+                        Box(
+                            modifier = Modifier
+                                .clip(PadelPillShape)
+                                .background(PadelVolt)
+                                .padding(horizontal = 8.dp, vertical = 3.dp)
+                        ) {
+                            Text(
+                                text = "+0.12 PDR",
+                                style = PadelTypography.labelSmall.copy(
+                                    color = PadelTextInverse,
+                                    fontWeight = FontWeight.ExtraBold,
+                                    fontSize = 10.sp
+                                )
+                            )
+                        }
+                    }
                 }
             }
 
