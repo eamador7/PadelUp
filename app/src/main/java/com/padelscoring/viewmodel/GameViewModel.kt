@@ -166,7 +166,7 @@ class GameViewModel : ViewModel() {
 
     fun undoLastPoint() {
         if (history.isNotEmpty()) {
-            _matchState.value = history.removeLast()
+            _matchState.value = history.removeAt(history.lastIndex)
         }
     }
 
