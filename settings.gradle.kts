@@ -13,5 +13,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "PadelScoring"
+rootProject.name = "PadelUp"
 include(":app")
