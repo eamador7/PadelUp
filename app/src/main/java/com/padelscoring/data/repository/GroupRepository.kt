@@ -43,7 +43,7 @@ class GroupRepositoryImpl(
                 GroupMemberRanking(
                     rank = index + 1,
                     name = userName,
-                    elo = member.groupElo,
+                    elo = member.groupElo.toInt(),
                     trophiesWon = member.tournamentsWon,
                     winRate = winRate
                 )
