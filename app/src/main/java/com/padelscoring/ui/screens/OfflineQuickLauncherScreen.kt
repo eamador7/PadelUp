@@ -203,6 +203,26 @@ fun OfflineQuickLauncherScreen(
                 }
             }
 
+            // Primary Launch Action
+            item {
+                PadelPrimaryButton(
+                    text = "KICKOFF AMERICANO ($selectedPlayerCount PLAYERS)",
+                    onClick = {
+                        haptics.heavyConfirm()
+                        val activePlayers = playerRoster.take(selectedPlayerCount)
+                        if (viewModel != null) {
+                            viewModel.kickoffTournament { id ->
+                                onTournamentCreated(id)
+                                onLaunchTournament(activePlayers, selectedTargetPoints)
+                            }
+                        } else {
+                            onLaunchTournament(activePlayers, selectedTargetPoints)
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
             // Quick Guest Name Entry
             item {
                 Text(
@@ -270,27 +290,6 @@ fun OfflineQuickLauncherScreen(
                         )
                     }
                 }
-            }
-
-            // Launch Action Button embedded cleanly in the scroll body
-            item {
-                Spacer(modifier = Modifier.height(8.dp))
-                PadelPrimaryButton(
-                    text = "KICKOFF AMERICANO ($selectedPlayerCount PLAYERS)",
-                    onClick = {
-                        haptics.heavyConfirm()
-                        val activePlayers = playerRoster.take(selectedPlayerCount)
-                        if (viewModel != null) {
-                            viewModel.kickoffTournament { id ->
-                                onTournamentCreated(id)
-                                onLaunchTournament(activePlayers, selectedTargetPoints)
-                            }
-                        } else {
-                            onLaunchTournament(activePlayers, selectedTargetPoints)
-                        }
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                )
             }
         }
     }
