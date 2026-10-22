@@ -19,6 +19,7 @@ val PadelObsidianDarkest = Color(0xFF080B10) // Pure background
 val PadelObsidian = Color(0xFF0F141C)        // Main surface
 val PadelSurface = Color(0xFF161D26)         // Card surface
 val PadelSurfaceElevated = Color(0xFF1E2734) // Modals, bottom sheets, elevated cards
+val PadelSurfaceVariant = PadelSurfaceElevated
 val PadelSurfaceGlass = Color(0xCC1A2330)    // Frosted glass overlay (80% opacity)
 
 // Court Turf Accents (Premier Padel Classic Blue Turf)
