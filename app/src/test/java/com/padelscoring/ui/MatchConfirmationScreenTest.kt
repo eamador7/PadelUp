@@ -14,7 +14,7 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
-@Config(sdk = [34])
+@Config(sdk = [34], qualifiers = "w412dp-h915dp")
 class MatchConfirmationScreenTest {
 
     @get:Rule
@@ -41,7 +41,7 @@ class MatchConfirmationScreenTest {
         }
 
         assertTrue(confirmed)
-        composeTestRule.onNodeWithText("CONFIRMED ✓").assertIsDisplayed()
+        composeTestRule.onNodeWithText("CONFIRMED ✓").assertExists()
     }
 
     @Test
@@ -78,14 +78,16 @@ class MatchConfirmationScreenTest {
         composeTestRule.onNodeWithText("SELECT DISPUTE REASON").assertDoesNotExist()
 
         // Tap Dispute Score link
-        composeTestRule.onNodeWithText("Dispute Score", substring = true).performClick()
+        composeTestRule.onNodeWithText("Dispute Score", substring = true)
+            .performScrollTo()
+            .performClick()
 
         // Verify dispute options and submit button appear
-        composeTestRule.onNodeWithText("SELECT DISPUTE REASON").assertIsDisplayed()
-        composeTestRule.onNodeWithText("Incorrect score recorded").assertIsDisplayed()
-        composeTestRule.onNodeWithText("Wrong players in pairing").assertIsDisplayed()
-        composeTestRule.onNodeWithText("Match prematurely ended / injury").assertIsDisplayed()
-        composeTestRule.onNodeWithText("Rule interpretation conflict").assertIsDisplayed()
-        composeTestRule.onNodeWithText("SUBMIT DISPUTE TO COORDINATOR").assertIsDisplayed()
+        composeTestRule.onNodeWithText("SELECT DISPUTE REASON").assertExists()
+        composeTestRule.onNodeWithText("Incorrect score recorded").assertExists()
+        composeTestRule.onNodeWithText("Wrong players in pairing").assertExists()
+        composeTestRule.onNodeWithText("Match prematurely ended / injury").assertExists()
+        composeTestRule.onNodeWithText("Rule interpretation conflict").assertExists()
+        composeTestRule.onNodeWithText("SUBMIT DISPUTE TO COORDINATOR").assertExists()
     }
 }

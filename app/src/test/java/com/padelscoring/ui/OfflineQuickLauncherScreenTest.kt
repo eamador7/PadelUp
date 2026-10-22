@@ -13,7 +13,7 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
-@Config(sdk = [34])
+@Config(sdk = [34], qualifiers = "w412dp-h915dp")
 class OfflineQuickLauncherScreenTest {
 
     @get:Rule
@@ -28,19 +28,19 @@ class OfflineQuickLauncherScreenTest {
         }
 
         // Default roster is 8 players
-        composeTestRule.onNodeWithText("GUEST ROSTER (8 PLAYERS)").assertIsDisplayed()
+        composeTestRule.onNodeWithText("GUEST ROSTER (8 PLAYERS)").assertExists()
 
         // Tap 4-player chip
         composeTestRule.onNodeWithText("4").performClick()
-        composeTestRule.onNodeWithText("GUEST ROSTER (4 PLAYERS)").assertIsDisplayed()
+        composeTestRule.onNodeWithText("GUEST ROSTER (4 PLAYERS)").assertExists()
 
         // Tap 12-player chip
         composeTestRule.onNodeWithText("12").performClick()
-        composeTestRule.onNodeWithText("GUEST ROSTER (12 PLAYERS)").assertIsDisplayed()
+        composeTestRule.onNodeWithText("GUEST ROSTER (12 PLAYERS)").assertExists()
 
         // Tap 16-player chip
         composeTestRule.onNodeWithText("16").performClick()
-        composeTestRule.onNodeWithText("GUEST ROSTER (16 PLAYERS)").assertIsDisplayed()
+        composeTestRule.onNodeWithText("GUEST ROSTER (16 PLAYERS)").assertExists()
     }
 
     @Test

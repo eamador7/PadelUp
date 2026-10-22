@@ -51,11 +51,11 @@ fun AmericanoCommandCenterScreen(
     // Interactive fallback court state for standalone preview
     var court1ScoreA by remember { mutableIntStateOf(18) }
     var court1ScoreB by remember { mutableIntStateOf(14) }
-    var court1Finished by remember { mutableStateOf(initialMatchesFinished) }
+    var court1Finished by remember(initialMatchesFinished) { mutableStateOf(initialMatchesFinished) }
 
     var court2ScoreA by remember { mutableIntStateOf(16) }
     var court2ScoreB by remember { mutableIntStateOf(16) }
-    var court2Finished by remember { mutableStateOf(initialMatchesFinished) }
+    var court2Finished by remember(initialMatchesFinished) { mutableStateOf(initialMatchesFinished) }
 
     var selectedTab by remember { mutableIntStateOf(0) } // 0 = Active Courts, 1 = Live Standings
 

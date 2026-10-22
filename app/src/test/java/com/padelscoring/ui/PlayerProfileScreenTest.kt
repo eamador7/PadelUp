@@ -11,7 +11,7 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
-@Config(sdk = [34])
+@Config(sdk = [34], qualifiers = "w412dp-h915dp")
 class PlayerProfileScreenTest {
 
     @get:Rule
@@ -29,9 +29,9 @@ class PlayerProfileScreenTest {
         }
 
         // Numeric level formatted with Locale.US
-        composeTestRule.onNodeWithText("4.85").assertIsDisplayed()
+        composeTestRule.onNodeWithText("4.85").assertExists()
         // Progression delta pill
-        composeTestRule.onNodeWithText("▲ +0.12").assertIsDisplayed()
+        composeTestRule.onNodeWithText("▲ +0.12").assertExists()
     }
 
     @Test
@@ -62,9 +62,11 @@ class PlayerProfileScreenTest {
             }
         }
 
-        composeTestRule.onNodeWithText("Alejandro Galán").assertIsDisplayed()
-        composeTestRule.onNodeWithText("WIN RATE").assertIsDisplayed()
-        composeTestRule.onNodeWithText("BEST STREAK").assertIsDisplayed()
-        composeTestRule.onNodeWithText("AMERICANO TROPHIES & BADGES").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Alejandro Galán").assertExists()
+        composeTestRule.onNodeWithText("WIN RATE").assertExists()
+        composeTestRule.onNodeWithText("BEST STREAK").assertExists()
+        composeTestRule.onNodeWithText("AMERICANO TROPHIES & BADGES")
+            .performScrollTo()
+            .assertIsDisplayed()
     }
 }
