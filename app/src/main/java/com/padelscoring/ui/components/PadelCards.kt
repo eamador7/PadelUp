@@ -268,26 +268,6 @@ fun PadelCourtVisualizerCard(
         }
     }
 }
-                Text(
-                    text = "${teamBPlayers.first} & ${teamBPlayers.second}",
-                    style = PadelTypography.titleSmall.copy(
-                        color = PadelTextPrimary,
-                        fontWeight = FontWeight.Bold
-                    ),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-                Text(
-                    text = "TEAM B",
-                    style = PadelTypography.labelSmall.copy(
-                        color = PadelTextMuted,
-                        fontSize = 10.sp
-                    )
-                )
-            }
-        }
-    }
-}
 
 /**
  * Padel Leaderboard Standing Row:
