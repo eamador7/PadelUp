@@ -19,10 +19,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.padelscoring.ui.components.*
 import com.padelscoring.ui.theme.*
+import com.padelscoring.viewmodel.MatchConfirmationViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MatchConfirmationScreen(
+    viewModel: MatchConfirmationViewModel? = null,
     courtNumber: Int = 1,
     teamANames: Pair<String, String> = Pair("Ale Galán", "Arturo Coello"),
     teamBNames: Pair<String, String> = Pair("Juan Lebrón", "Agustín Tapia"),
@@ -32,7 +34,9 @@ fun MatchConfirmationScreen(
     onDisputeSubmitted: (reason: String) -> Unit = {}
 ) {
     val haptics = rememberPadelHaptics()
-    var isDisputed by remember { mutableStateOf(false) }
+    val vmState = viewModel?.uiState?.collectAsState()?.value
+
+    var localIsDisputed by remember { mutableStateOf(false) }
     var selectedDisputeReason by remember { mutableStateOf<String?>(null) }
     val disputeReasons = listOf(
         "Incorrect score recorded",
@@ -40,6 +44,14 @@ fun MatchConfirmationScreen(
         "Match prematurely ended / injury",
         "Rule interpretation conflict"
     )
+
+    val isDisputed = vmState?.isDisputed ?: localIsDisputed
+    val displayCourtNumber = vmState?.courtNumber ?: courtNumber
+    val displayRoundNumber = vmState?.roundNumber ?: 3
+    val displayTeamA = vmState?.teamANames ?: teamANames
+    val displayTeamB = vmState?.teamBNames ?: teamBNames
+    val displayFinalScoreA = vmState?.finalScoreA ?: finalScoreA
+    val displayFinalScoreB = vmState?.finalScoreB ?: finalScoreB
 
     Scaffold(
         containerColor = PadelObsidianDarkest,
@@ -114,7 +126,7 @@ fun MatchConfirmationScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "COURT $courtNumber • ROUND 3",
+                    text = "COURT $displayCourtNumber • ROUND $displayRoundNumber",
                     style = PadelTypography.labelSmall.copy(
                         color = PadelTextMuted,
                         letterSpacing = 1.sp
@@ -132,15 +144,15 @@ fun MatchConfirmationScreen(
                     // Team A
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
-                            text = "$finalScoreA",
+                            text = "$displayFinalScoreA",
                             style = PadelTypography.displayLarge.copy(
-                                color = if (finalScoreA > finalScoreB) PadelVolt else PadelTextPrimary,
+                                color = if (displayFinalScoreA > displayFinalScoreB) PadelVolt else PadelTextPrimary,
                                 fontWeight = FontWeight.ExtraBold,
                                 fontSize = 56.sp
                             )
                         )
                         Text(
-                            text = "${teamANames.first}\n${teamANames.second}",
+                            text = "${displayTeamA.first}\n${displayTeamA.second}",
                             style = PadelTypography.titleSmall.copy(
                                 fontWeight = FontWeight.Bold,
                                 color = PadelTextSecondary
@@ -157,15 +169,15 @@ fun MatchConfirmationScreen(
                     // Team B
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
-                            text = "$finalScoreB",
+                            text = "$displayFinalScoreB",
                             style = PadelTypography.displayLarge.copy(
-                                color = if (finalScoreB > finalScoreA) PadelVolt else PadelTextPrimary,
+                                color = if (displayFinalScoreB > displayFinalScoreA) PadelVolt else PadelTextPrimary,
                                 fontWeight = FontWeight.ExtraBold,
                                 fontSize = 56.sp
                             )
                         )
                         Text(
-                            text = "${teamBNames.first}\n${teamBNames.second}",
+                            text = "${displayTeamB.first}\n${displayTeamB.second}",
                             style = PadelTypography.titleSmall.copy(
                                 fontWeight = FontWeight.Bold,
                                 color = PadelTextSecondary
@@ -176,7 +188,7 @@ fun MatchConfirmationScreen(
                 }
             }
 
-            // Slide To Confirm Component (Emil Kowalski Tactile Verification)
+            // Slide To Confirm Component (Tactile Verification)
             if (!isDisputed) {
                 Text(
                     text = "Both pairs must verify the final result before advancing.",
@@ -190,6 +202,7 @@ fun MatchConfirmationScreen(
                     title = "SLIDE TO CONFIRM RESULT",
                     onConfirmed = {
                         haptics.heavyConfirm()
+                        viewModel?.onSlideToConfirm()
                         onConfirmed()
                     },
                     haptics = haptics
@@ -206,7 +219,7 @@ fun MatchConfirmationScreen(
                     ),
                     modifier = Modifier.clickable {
                         haptics.warning()
-                        isDisputed = true
+                        localIsDisputed = true
                     }
                 )
             } else {
@@ -272,7 +285,10 @@ fun MatchConfirmationScreen(
                     PadelPrimaryButton(
                         text = "SUBMIT DISPUTE TO COORDINATOR",
                         onClick = {
-                            selectedDisputeReason?.let { onDisputeSubmitted(it) }
+                            selectedDisputeReason?.let { reason ->
+                                viewModel?.onDispute(reason)
+                                onDisputeSubmitted(reason)
+                            }
                         },
                         enabled = selectedDisputeReason != null,
                         modifier = Modifier.fillMaxWidth()
@@ -282,7 +298,7 @@ fun MatchConfirmationScreen(
 
                     PadelSecondaryButton(
                         text = "Cancel",
-                        onClick = { isDisputed = false },
+                        onClick = { localIsDisputed = false },
                         modifier = Modifier.fillMaxWidth()
                     )
                 }

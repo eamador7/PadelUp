@@ -34,6 +34,12 @@ interface MatchDao {
     @Query("SELECT * FROM matches WHERE confirmationStatus = 'PENDING' ORDER BY playedAt DESC")
     fun getPendingMatches(): Flow<List<MatchEntity>>
 
+    @Query("SELECT * FROM matches WHERE (team1Player1Id = :userId OR team1Player2Id = :userId OR team2Player1Id = :userId OR team2Player2Id = :userId) ORDER BY playedAt DESC")
+    fun getMatchesForUser(userId: String): Flow<List<MatchEntity>>
+
+    @Query("SELECT * FROM matches WHERE (team1Player1Id = :userId OR team1Player2Id = :userId OR team2Player1Id = :userId OR team2Player2Id = :userId) ORDER BY playedAt DESC")
+    suspend fun getMatchesForUserSync(userId: String): List<MatchEntity>
+
     @Query("UPDATE matches SET confirmationStatus = :status WHERE id = :matchId")
     suspend fun updateConfirmationStatus(matchId: String, status: String)
 
@@ -55,6 +61,9 @@ interface MatchDao {
 
     @Query("SELECT * FROM match_confirmations WHERE matchId = :matchId")
     fun getConfirmationsForMatch(matchId: String): Flow<List<MatchConfirmationEntity>>
+
+    @Query("SELECT * FROM match_confirmations WHERE matchId = :matchId AND userId = :userId")
+    suspend fun getConfirmationForUser(matchId: String, userId: String): MatchConfirmationEntity?
 
     @Query("SELECT * FROM match_confirmations WHERE id = :id")
     suspend fun getConfirmationById(id: String): MatchConfirmationEntity?
