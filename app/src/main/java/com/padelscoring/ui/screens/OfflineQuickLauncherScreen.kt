@@ -442,7 +442,7 @@ fun OfflineQuickLauncherScreen(
                         val trimmed = editingPlayerName.trim()
                         if (trimmed.isNotEmpty()) {
                             if (viewModel != null) {
-                                viewModel.updatePlayerName(idx, trimmed)
+                                viewModel.updateGuestName(idx, trimmed)
                             } else if (idx < localPlayerNames.size) {
                                 localPlayerNames[idx] = trimmed
                             }
