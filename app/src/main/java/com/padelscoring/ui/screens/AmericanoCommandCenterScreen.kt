@@ -259,7 +259,7 @@ fun AmericanoCommandCenterScreen(
                                 }
                             }
                         }
-                    } else {
+                    } else if (viewModel != null && vmState?.tournamentId.isNullOrEmpty()) {
                         // Quick-start banner for new users
                         item {
                             Column(
@@ -268,8 +268,9 @@ fun AmericanoCommandCenterScreen(
                                     .clip(PadelCourtCardShape)
                                     .background(PadelSurface)
                                     .border(1.dp, PadelVoltBorder, PadelCourtCardShape)
-                                    .padding(16.dp),
-                                verticalArrangement = Arrangement.spacedBy(10.dp)
+                                    .padding(20.dp),
+                                verticalArrangement = Arrangement.spacedBy(14.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
                             ) {
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
@@ -297,7 +298,7 @@ fun AmericanoCommandCenterScreen(
                                             .padding(horizontal = 10.dp, vertical = 4.dp)
                                     ) {
                                         Text(
-                                            text = "SAMPLE MATCHES BELOW",
+                                            text = "AMERICANO",
                                             style = PadelTypography.labelSmall.copy(
                                                 color = PadelVolt,
                                                 fontWeight = FontWeight.Bold,
@@ -307,9 +308,20 @@ fun AmericanoCommandCenterScreen(
                                     }
                                 }
                                 Text(
-                                    text = "Set up your players and courts in seconds with optimized bracket rotation.",
-                                    style = PadelTypography.bodyMedium.copy(color = PadelTextSecondary)
+                                    text = "NO ACTIVE TOURNAMENT",
+                                    style = PadelTypography.titleLarge.copy(
+                                        fontWeight = FontWeight.ExtraBold,
+                                        color = PadelTextPrimary
+                                    )
                                 )
+                                Text(
+                                    text = "Set up your players and courts in seconds with optimized bracket rotation.",
+                                    style = PadelTypography.bodyMedium.copy(
+                                        color = PadelTextSecondary,
+                                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                                    )
+                                )
+                                Spacer(modifier = Modifier.height(6.dp))
                                 PadelPrimaryButton(
                                     text = "⚡ START NEW AMERICANO TOURNAMENT",
                                     onClick = {
@@ -320,8 +332,8 @@ fun AmericanoCommandCenterScreen(
                                 )
                             }
                         }
-
-                        // Fallback interactive preview courts
+                    } else {
+                        // Fallback interactive preview courts (for previews and standalone test harness)
                         item {
                             PadelCourtVisualizerCard(
                                 courtNumber = 1,
