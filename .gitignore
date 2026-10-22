@@ -23,3 +23,4 @@ app/google-services.json
 *-firebase-adminsdk-*.json
 .vscode/
 supabase/.temp/
+.agent_*.txt
