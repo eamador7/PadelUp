@@ -6,11 +6,14 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -56,21 +59,63 @@ fun GroupsHubScreen(
     Scaffold(
         containerColor = PadelObsidianDarkest,
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "GROUPS & LEADERBOARD",
-                        style = PadelTypography.labelLarge.copy(
-                            fontWeight = FontWeight.ExtraBold,
-                            letterSpacing = 1.sp,
-                            color = PadelTextPrimary
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(PadelObsidian)
+                    .statusBarsPadding()
+                    .displayCutoutPadding()
+                    .padding(horizontal = 20.dp, vertical = 14.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            PadelRacketIcon(size = 18.dp)
+                            Text(
+                                text = "COMMUNITY HUB",
+                                style = PadelTypography.labelSmall.copy(
+                                    fontWeight = FontWeight.ExtraBold,
+                                    letterSpacing = 1.2.sp,
+                                    color = PadelVolt
+                                )
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = "GROUPS & LEADERBOARD",
+                            style = PadelTypography.labelLarge.copy(
+                                fontWeight = FontWeight.ExtraBold,
+                                letterSpacing = 1.sp,
+                                color = PadelTextPrimary
+                            )
                         )
-                    )
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = PadelObsidian
-                )
-            )
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .clip(PadelPillShape)
+                            .background(PadelSurfaceElevated)
+                            .border(1.dp, PadelBorderHairline, PadelPillShape)
+                            .padding(horizontal = 10.dp, vertical = 5.dp)
+                    ) {
+                        Text(
+                            text = "🎾 ACTIVE CLUB",
+                            style = PadelTypography.labelSmall.copy(
+                                color = PadelVolt,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 10.sp
+                            )
+                        )
+                    }
+                }
+            }
         }
     ) { innerPadding ->
         LazyColumn(
@@ -81,21 +126,26 @@ fun GroupsHubScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp),
             contentPadding = PaddingValues(top = 16.dp, bottom = 24.dp)
         ) {
-            // Master Action Button inside scroll view (eliminates stacked double bottom bars)
+            // Master Action Button inside scroll view
             item {
                 PadelPrimaryButton(
-                    text = "START AMERICANO TOURNAMENT",
+                    text = "⚡ START AMERICANO TOURNAMENT",
                     onClick = { showStartModal = true },
                     modifier = Modifier.fillMaxWidth()
                 )
             }
+
             // Group Hero Overview Card
             item {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(PadelCourtCardShape)
-                        .background(PadelSurface)
+                        .background(
+                            Brush.verticalGradient(
+                                listOf(Color(0xFF192332), PadelSurface)
+                            )
+                        )
                         .border(1.dp, PadelBorderHairline, PadelCourtCardShape)
                         .padding(20.dp)
                 ) {
@@ -126,6 +176,7 @@ fun GroupsHubScreen(
                             modifier = Modifier
                                 .clip(PadelPillShape)
                                 .background(PadelSurfaceElevated)
+                                .border(1.dp, PadelBorderHairline, PadelPillShape)
                                 .padding(horizontal = 12.dp, vertical = 6.dp)
                         ) {
                             Text(
@@ -147,29 +198,64 @@ fun GroupsHubScreen(
                 }
             }
 
-            // Group Members Leaderboard
+            // Group Members Leaderboard Header
             item {
-                Text(
-                    text = "GROUP RANKINGS",
-                    style = PadelTypography.labelSmall.copy(
-                        letterSpacing = 1.sp,
-                        color = PadelTextMuted
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "GROUP RANKINGS",
+                        style = PadelTypography.labelSmall.copy(
+                            letterSpacing = 1.sp,
+                            color = PadelTextMuted
+                        )
                     )
-                )
+                    Text(
+                        text = "ELO RATING",
+                        style = PadelTypography.labelSmall.copy(
+                            color = PadelTextMuted,
+                            fontSize = 10.sp
+                        )
+                    )
+                }
             }
 
             items(displayMembers) { member ->
                 val isPodium = member.rank <= 3
+                val rankColor = when (member.rank) {
+                    1 -> PadelGoldCrown
+                    2 -> PadelSilverMedal
+                    3 -> PadelBronzeMedal
+                    else -> PadelTextSecondary
+                }
+
+                val cardBg = when (member.rank) {
+                    1 -> PadelVoltSubtle
+                    2 -> PadelSilverSubtle
+                    3 -> PadelBronzeSubtle
+                    else -> PadelSurface
+                }
+
+                val cardBorder = when (member.rank) {
+                    1 -> PadelVoltBorder
+                    2 -> PadelSilverMedal.copy(alpha = 0.3f)
+                    3 -> PadelBronzeMedal.copy(alpha = 0.3f)
+                    else -> PadelBorderHairline
+                }
+
+                val memberInitials = member.name.split(" ")
+                    .mapNotNull { it.firstOrNull()?.toString() }
+                    .take(2)
+                    .joinToString("")
+
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(PadelShapes.medium)
-                        .background(if (member.rank == 1) PadelVoltSubtle else PadelSurface)
-                        .border(
-                            1.dp,
-                            if (member.rank == 1) PadelVoltBorder else PadelBorderHairline,
-                            PadelShapes.medium
-                        )
+                        .background(cardBg)
+                        .border(1.dp, cardBorder, PadelShapes.medium)
                         .padding(horizontal = 14.dp, vertical = 12.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -177,11 +263,36 @@ fun GroupsHubScreen(
                         text = "#${member.rank}",
                         style = PadelTypography.titleLarge.copy(
                             fontWeight = FontWeight.ExtraBold,
-                            color = if (member.rank == 1) PadelVolt else PadelTextSecondary,
+                            color = rankColor,
                             fontSize = 16.sp
                         ),
-                        modifier = Modifier.width(32.dp)
+                        modifier = Modifier.width(36.dp)
                     )
+
+                    // Initials Circle
+                    Box(
+                        modifier = Modifier
+                            .size(36.dp)
+                            .clip(CircleShape)
+                            .background(if (member.rank == 1) PadelVolt else PadelSurfaceElevated)
+                            .border(
+                                1.dp,
+                                if (member.rank == 1) PadelVolt else PadelBorderHairline,
+                                CircleShape
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = memberInitials,
+                            style = PadelTypography.labelMedium.copy(
+                                color = if (member.rank == 1) PadelTextInverse else PadelTextPrimary,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 12.sp
+                            )
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.width(12.dp))
 
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
@@ -191,25 +302,45 @@ fun GroupsHubScreen(
                                 color = PadelTextPrimary
                             )
                         )
-                        Text(
-                            text = "${member.trophiesWon} 🏆 Americano Titles • ${member.winRate}% Win",
-                            style = PadelTypography.bodySmall.copy(color = PadelTextMuted)
-                        )
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "🏆 ${member.trophiesWon} Titles",
+                                style = PadelTypography.bodySmall.copy(
+                                    color = if (member.trophiesWon > 3) PadelGoldCrown else PadelTextMuted,
+                                    fontSize = 11.sp
+                                )
+                            )
+                            Text(
+                                text = "• ${member.winRate}% Win",
+                                style = PadelTypography.bodySmall.copy(
+                                    color = PadelTextMuted,
+                                    fontSize = 11.sp
+                                )
+                            )
+                        }
                     }
 
-                    Column(horizontalAlignment = Alignment.End) {
+                    // Elo Rating Badge
+                    Box(
+                        modifier = Modifier
+                            .clip(PadelShapes.small)
+                            .background(if (isPodium) PadelSurfaceElevated else PadelSurface)
+                            .border(
+                                1.dp,
+                                if (isPodium) rankColor.copy(alpha = 0.4f) else PadelBorderHairline,
+                                PadelShapes.small
+                            )
+                            .padding(horizontal = 10.dp, vertical = 6.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
                         Text(
                             text = "${member.elo}",
-                            style = PadelTypography.headlineSmall.copy(
-                                color = if (isPodium) PadelVolt else PadelTextPrimary,
+                            style = PadelTypography.titleSmall.copy(
+                                color = if (isPodium) rankColor else PadelTextPrimary,
                                 fontWeight = FontWeight.ExtraBold
-                            )
-                        )
-                        Text(
-                            text = "ELO",
-                            style = PadelTypography.labelSmall.copy(
-                                color = PadelTextMuted,
-                                fontSize = 9.sp
                             )
                         )
                     }
@@ -218,14 +349,13 @@ fun GroupsHubScreen(
         }
     }
 
-    // Modal Sheet for choosing Mode: Online Group Sync vs Quick Offline Guest Mode
+    // Modal to choose Americano Tournament Mode
     if (showStartModal) {
         AlertDialog(
             onDismissRequest = { showStartModal = false },
-            containerColor = PadelSurfaceElevated,
             title = {
                 Text(
-                    text = "SELECT TOURNAMENT MODE",
+                    text = "Launch Americano Tournament",
                     style = PadelTypography.headlineSmall.copy(
                         color = PadelTextPrimary,
                         fontWeight = FontWeight.ExtraBold
@@ -239,46 +369,13 @@ fun GroupsHubScreen(
                         style = PadelTypography.bodyMedium.copy(color = PadelTextSecondary)
                     )
 
-                    // Option 1: Online Group Mode
+                    // Option 1: Fast Offline Mode
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(PadelShapes.medium)
-                            .background(PadelSurface)
-                            .border(1.dp, PadelVoltBorder, PadelShapes.medium)
-                            .clickable {
-                                showStartModal = false
-                                onStartAmericanoOnline()
-                            }
-                            .padding(14.dp)
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Text(text = "🌐", fontSize = 18.sp)
-                            Text(
-                                text = "Club Squad Live Sync",
-                                style = PadelTypography.titleMedium.copy(
-                                    fontWeight = FontWeight.Bold,
-                                    color = PadelVolt
-                                )
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = "Players log scores simultaneously from their own devices and update club rankings.",
-                            style = PadelTypography.bodySmall.copy(color = PadelTextSecondary)
-                        )
-                    }
-
-                    // Option 2: Offline Quick Launcher Mode
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(PadelShapes.medium)
-                            .background(PadelSurface)
-                            .border(1.dp, PadelBorderHairline, PadelShapes.medium)
+                            .background(PadelSurfaceElevated)
+                            .border(1.5.dp, PadelVoltBorder, PadelShapes.medium)
                             .clickable {
                                 showStartModal = false
                                 onStartAmericanoOffline()
@@ -294,13 +391,46 @@ fun GroupsHubScreen(
                                 text = "Single-Device Quick Kickoff",
                                 style = PadelTypography.titleMedium.copy(
                                     fontWeight = FontWeight.Bold,
-                                    color = PadelTextPrimary
+                                    color = PadelVolt
                                 )
                             )
                         }
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = "One phone acts as court coordinator. Guest roster presets (4, 8, 12, 16 players).",
+                            text = "Zero login needed. Quick guest roster (4, 8, 12, 16 players), instant kickoff.",
+                            style = PadelTypography.bodySmall.copy(color = PadelTextSecondary)
+                        )
+                    }
+
+                    // Option 2: Online Group Mode
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(PadelShapes.medium)
+                            .background(PadelSurfaceElevated)
+                            .border(1.dp, PadelBorderHairline, PadelShapes.medium)
+                            .clickable {
+                                showStartModal = false
+                                onStartAmericanoOnline()
+                            }
+                            .padding(14.dp)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Text(text = "🌐", fontSize = 18.sp)
+                            Text(
+                                text = "Club Squad Live Sync",
+                                style = PadelTypography.titleMedium.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = PadelTurfCyan
+                                )
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "Players log scores simultaneously from their own devices and update club rankings.",
                             style = PadelTypography.bodySmall.copy(color = PadelTextSecondary)
                         )
                     }
@@ -311,7 +441,8 @@ fun GroupsHubScreen(
                 TextButton(onClick = { showStartModal = false }) {
                     Text(text = "Dismiss", color = PadelTextMuted)
                 }
-            }
+            },
+            containerColor = PadelSurface
         )
     }
 }

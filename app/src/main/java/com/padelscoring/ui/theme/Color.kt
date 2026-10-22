@@ -47,3 +47,12 @@ val PadelAmberTiebreak = Color(0xFFF59E0B)
 val PadelAmberSubtle = Color(0x26F59E0B)
 val PadelSkyOffline = Color(0xFF38BDF8)
 val PadelSkySubtle = Color(0x2638BDF8)
+
+// Podium & Achievement Accents (Peak-End celebration moments)
+val PadelGoldCrown = Color(0xFFFFD700)
+val PadelGoldSubtle = Color(0x26FFD700)
+val PadelSilverMedal = Color(0xFFE2E8F0)
+val PadelSilverSubtle = Color(0x26E2E8F0)
+val PadelBronzeMedal = Color(0xFFCD7F32)
+val PadelBronzeSubtle = Color(0x26CD7F32)
+
