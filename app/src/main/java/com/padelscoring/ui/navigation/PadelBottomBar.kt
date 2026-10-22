@@ -45,9 +45,18 @@ fun PadelBottomBar(
     PadelBottomBar(
         currentRoute = currentRoute,
         onNavigateToDestination = { item ->
+            val startDest = try {
+                navController.graph.findStartDestination()
+            } catch (_: Throwable) {
+                null
+            }
+            val startDestId = startDest?.id ?: navController.graph.startDestinationId
+
             navController.navigate(item.route) {
-                popUpTo(navController.graph.findStartDestination().id) {
-                    saveState = true
+                if (startDestId != 0) {
+                    popUpTo(startDestId) {
+                        saveState = true
+                    }
                 }
                 launchSingleTop = true
                 restoreState = true

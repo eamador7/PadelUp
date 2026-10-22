@@ -70,6 +70,38 @@ class MainActivity : ComponentActivity() {
                         startDestination = "americano",
                         modifier = Modifier.padding(bottom = innerPadding.calculateBottomPadding())
                     ) {
+                        composable("americano") {
+                            val factory = remember {
+                                PadelViewModelFactory.fromDatabase(database, initialId = null)
+                            }
+                            val vm: AmericanoTournamentViewModel = viewModel(factory = factory)
+                            AmericanoCommandCenterScreen(
+                                viewModel = vm,
+                                onNavigateBack = { navController.popBackStack() },
+                                onMatchSelected = { navController.navigate("confirmation") }
+                            )
+                        }
+
+                        composable(
+                            route = "americano/{id}",
+                            arguments = listOf(
+                                navArgument("id") {
+                                    type = NavType.StringType
+                                }
+                            )
+                        ) { backStackEntry ->
+                            val tournamentId = backStackEntry.arguments?.getString("id")
+                            val factory = remember(tournamentId) {
+                                PadelViewModelFactory.fromDatabase(database, initialId = tournamentId)
+                            }
+                            val vm: AmericanoTournamentViewModel = viewModel(factory = factory)
+                            AmericanoCommandCenterScreen(
+                                viewModel = vm,
+                                onNavigateBack = { navController.popBackStack() },
+                                onMatchSelected = { navController.navigate("confirmation") }
+                            )
+                        }
+
                         composable(
                             route = "americano?id={id}",
                             arguments = listOf(
@@ -89,6 +121,38 @@ class MainActivity : ComponentActivity() {
                                 viewModel = vm,
                                 onNavigateBack = { navController.popBackStack() },
                                 onMatchSelected = { navController.navigate("confirmation") }
+                            )
+                        }
+
+                        composable("confirmation") {
+                            val factory = remember {
+                                PadelViewModelFactory.fromDatabase(database, initialId = null)
+                            }
+                            val vm: MatchConfirmationViewModel = viewModel(factory = factory)
+                            MatchConfirmationScreen(
+                                viewModel = vm,
+                                onConfirmed = { navController.navigate("americano") },
+                                onDisputeSubmitted = { navController.navigate("americano") }
+                            )
+                        }
+
+                        composable(
+                            route = "confirmation/{matchId}",
+                            arguments = listOf(
+                                navArgument("matchId") {
+                                    type = NavType.StringType
+                                }
+                            )
+                        ) { backStackEntry ->
+                            val matchId = backStackEntry.arguments?.getString("matchId")
+                            val factory = remember(matchId) {
+                                PadelViewModelFactory.fromDatabase(database, initialId = matchId)
+                            }
+                            val vm: MatchConfirmationViewModel = viewModel(factory = factory)
+                            MatchConfirmationScreen(
+                                viewModel = vm,
+                                onConfirmed = { navController.navigate("americano") },
+                                onDisputeSubmitted = { navController.navigate("americano") }
                             )
                         }
 
