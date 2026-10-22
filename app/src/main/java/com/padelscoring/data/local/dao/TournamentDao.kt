@@ -52,8 +52,17 @@ interface TournamentDao {
     @Query("SELECT * FROM tournament_rounds WHERE tournamentId = :tournamentId ORDER BY roundNumber ASC")
     suspend fun getRounds(tournamentId: String): List<TournamentRoundEntity>
 
+    @Query("SELECT * FROM tournament_rounds WHERE id = :id")
+    suspend fun getRoundById(id: String): TournamentRoundEntity?
+
+    @Query("UPDATE tournament_rounds SET status = :status WHERE id = :roundId")
+    suspend fun updateRoundStatus(roundId: String, status: String)
+
     @Query("SELECT * FROM tournament_matches WHERE roundId = :roundId ORDER BY courtNumber ASC")
     fun getRoundMatchesFlow(roundId: String): Flow<List<TournamentMatchEntity>>
+
+    @Query("SELECT * FROM tournament_matches WHERE roundId = :roundId ORDER BY courtNumber ASC")
+    suspend fun getRoundMatches(roundId: String): List<TournamentMatchEntity>
 
     @Query("SELECT * FROM tournament_matches WHERE tournamentId = :tournamentId ORDER BY courtNumber ASC")
     fun getTournamentMatchesFlow(tournamentId: String): Flow<List<TournamentMatchEntity>>

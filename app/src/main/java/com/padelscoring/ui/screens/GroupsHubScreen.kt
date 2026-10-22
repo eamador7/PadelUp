@@ -6,7 +6,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -17,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.padelscoring.ui.components.*
 import com.padelscoring.ui.theme.*
+import com.padelscoring.viewmodel.GroupsHubViewModel
 
 data class GroupMemberRanking(
     val rank: Int,
@@ -29,14 +29,16 @@ data class GroupMemberRanking(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GroupsHubScreen(
+    viewModel: GroupsHubViewModel? = null,
     groupName: String = "Friday Night Padel Club",
     memberCount: Int = 16,
     onStartAmericanoOnline: () -> Unit = {},
     onStartAmericanoOffline: () -> Unit = {}
 ) {
+    val vmState = viewModel?.uiState?.collectAsState()?.value
     var showStartModal by remember { mutableStateOf(false) }
 
-    val members = listOf(
+    val defaultMembers = listOf(
         GroupMemberRanking(1, "Alejandro Galán", 1845, 6, 78),
         GroupMemberRanking(2, "Arturo Coello", 1812, 5, 75),
         GroupMemberRanking(3, "Juan Lebrón", 1760, 4, 69),
@@ -46,6 +48,10 @@ fun GroupsHubScreen(
         GroupMemberRanking(7, "Martín Di Nenno", 1595, 1, 54),
         GroupMemberRanking(8, "Fernando Belasteguín", 1580, 1, 50)
     )
+
+    val displayGroupName = vmState?.groupName ?: groupName
+    val displayMemberCount = vmState?.memberCount ?: memberCount
+    val displayMembers = vmState?.members?.takeIf { it.isNotEmpty() } ?: defaultMembers
 
     Scaffold(
         containerColor = PadelObsidianDarkest,
@@ -115,7 +121,7 @@ fun GroupsHubScreen(
                             )
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(
-                                text = groupName,
+                                text = displayGroupName,
                                 style = PadelTypography.headlineMedium.copy(
                                     fontWeight = FontWeight.ExtraBold,
                                     color = PadelTextPrimary
@@ -130,7 +136,7 @@ fun GroupsHubScreen(
                                 .padding(horizontal = 12.dp, vertical = 6.dp)
                         ) {
                             Text(
-                                text = "$memberCount MEMBERS",
+                                text = "$displayMemberCount MEMBERS",
                                 style = PadelTypography.labelSmall.copy(
                                     color = PadelTextSecondary,
                                     fontWeight = FontWeight.Bold
@@ -159,7 +165,7 @@ fun GroupsHubScreen(
                 )
             }
 
-            items(members) { member ->
+            items(displayMembers) { member ->
                 val isPodium = member.rank <= 3
                 Row(
                     modifier = Modifier
@@ -259,27 +265,27 @@ fun GroupsHubScreen(
                         ) {
                             Text(text = "🌐", fontSize = 18.sp)
                             Text(
-                                text = "ONLINE GROUP MODE",
-                                style = PadelTypography.labelLarge.copy(
-                                    color = PadelVolt,
-                                    fontWeight = FontWeight.ExtraBold
+                                text = "Club Squad Live Sync",
+                                style = PadelTypography.titleMedium.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = PadelVolt
                                 )
                             )
                         }
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = "Live sync across phones. Updates group Elo and stats automatically.",
+                            text = "Players log scores simultaneously from their own devices and update club rankings.",
                             style = PadelTypography.bodySmall.copy(color = PadelTextSecondary)
                         )
                     }
 
-                    // Option 2: Quick Offline Guest Mode
+                    // Option 2: Offline Quick Launcher Mode
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(PadelShapes.medium)
                             .background(PadelSurface)
-                            .border(1.dp, PadelSkyOffline.copy(alpha = 0.4f), PadelShapes.medium)
+                            .border(1.dp, PadelBorderHairline, PadelShapes.medium)
                             .clickable {
                                 showStartModal = false
                                 onStartAmericanoOffline()
@@ -290,18 +296,18 @@ fun GroupsHubScreen(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            Text(text = "🛡️", fontSize = 18.sp)
+                            Text(text = "⚡", fontSize = 18.sp)
                             Text(
-                                text = "QUICK OFFLINE GUEST MODE",
-                                style = PadelTypography.labelLarge.copy(
-                                    color = PadelSkyOffline,
-                                    fontWeight = FontWeight.ExtraBold
+                                text = "Single-Device Quick Kickoff",
+                                style = PadelTypography.titleMedium.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = PadelTextPrimary
                                 )
                             )
                         }
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = "Zero account needed. Add local player names and run instantly from 1 device.",
+                            text = "One phone acts as court coordinator. Guest roster presets (4, 8, 12, 16 players).",
                             style = PadelTypography.bodySmall.copy(color = PadelTextSecondary)
                         )
                     }
@@ -310,7 +316,7 @@ fun GroupsHubScreen(
             confirmButton = {},
             dismissButton = {
                 TextButton(onClick = { showStartModal = false }) {
-                    Text("Cancel", color = PadelTextMuted)
+                    Text(text = "Dismiss", color = PadelTextMuted)
                 }
             }
         )

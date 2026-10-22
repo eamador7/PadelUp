@@ -8,6 +8,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -16,10 +17,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.padelscoring.ui.components.*
 import com.padelscoring.ui.theme.*
+import com.padelscoring.viewmodel.PlayerProfileViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PlayerProfileScreen(
+    viewModel: PlayerProfileViewModel? = null,
     playerName: String = "Alejandro Galán",
     level: Double = 4.85,
     delta: Double = +0.12,
@@ -29,6 +32,19 @@ fun PlayerProfileScreen(
     preferredSide: String = "REVÉS", // "REVÉS" (Left/Backhand) or "DRIVE" (Right/Forehand)
     recentForm: List<Boolean> = listOf(true, true, true, false, true, true, true, false, true, true)
 ) {
+    val vmState = viewModel?.uiState?.collectAsState()?.value
+
+    val displayPlayerName = vmState?.playerName ?: playerName
+    val displayLevel = vmState?.level ?: level
+    val displayDelta = vmState?.delta ?: delta
+    val displayWinRate = vmState?.winRate ?: winRate
+    val displayMatchesPlayed = vmState?.matchesPlayed ?: matchesPlayed
+    val displayBestStreak = vmState?.bestStreak ?: bestStreak
+    val displayCurrentStreak = vmState?.currentStreak ?: 2
+    val displayPreferredSide = vmState?.preferredSide ?: preferredSide
+    val displayRecentForm = vmState?.recentForm?.takeIf { it.isNotEmpty() } ?: recentForm
+    val displayConfidenceProgress = vmState?.confidenceProgress ?: 0.92f
+
     Scaffold(
         containerColor = PadelObsidianDarkest,
         topBar = {
@@ -69,15 +85,15 @@ fun PlayerProfileScreen(
             ) {
                 // Circular Level Badge
                 DynamicLevelBadge(
-                    level = level,
-                    delta = delta,
-                    confidenceProgress = 0.92f
+                    level = displayLevel,
+                    delta = displayDelta,
+                    confidenceProgress = displayConfidenceProgress
                 )
 
                 Spacer(modifier = Modifier.height(14.dp))
 
                 Text(
-                    text = playerName,
+                    text = displayPlayerName,
                     style = PadelTypography.headlineMedium.copy(
                         fontWeight = FontWeight.ExtraBold,
                         color = PadelTextPrimary
@@ -91,9 +107,9 @@ fun PlayerProfileScreen(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    CourtSideBadge(side = preferredSide)
+                    CourtSideBadge(side = displayPreferredSide)
                     Text(
-                        text = if (preferredSide == "REVÉS") "Left Side • Aggressive Finisher" else "Right Side • Tactical Builder",
+                        text = if (displayPreferredSide == "REVÉS") "Left Side • Aggressive Finisher" else "Right Side • Tactical Builder",
                         style = PadelTypography.bodySmall.copy(color = PadelTextMuted)
                     )
                 }
@@ -123,7 +139,7 @@ fun PlayerProfileScreen(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    recentForm.forEach { isWin ->
+                    displayRecentForm.forEach { isWin ->
                         FormDot(isWin = isWin)
                     }
                 }
@@ -149,14 +165,14 @@ fun PlayerProfileScreen(
                     )
                     Spacer(modifier = Modifier.height(6.dp))
                     Text(
-                        text = "$winRate%",
+                        text = "$displayWinRate%",
                         style = PadelTypography.displaySmall.copy(
                             color = PadelVolt,
                             fontWeight = FontWeight.ExtraBold
                         )
                     )
                     Text(
-                        text = "$matchesPlayed Total Matches",
+                        text = "$displayMatchesPlayed Total Matches",
                         style = PadelTypography.bodySmall.copy(color = PadelTextSecondary)
                     )
                 }
@@ -176,14 +192,14 @@ fun PlayerProfileScreen(
                     )
                     Spacer(modifier = Modifier.height(6.dp))
                     Text(
-                        text = "${bestStreak}W",
+                        text = "${displayBestStreak}W",
                         style = PadelTypography.displaySmall.copy(
                             color = PadelTurfCyan,
                             fontWeight = FontWeight.ExtraBold
                         )
                     )
                     Text(
-                        text = "Active Streak: 2W",
+                        text = "Active Streak: ${displayCurrentStreak}W",
                         style = PadelTypography.bodySmall.copy(color = PadelTextSecondary)
                     )
                 }

@@ -17,26 +17,33 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.padelscoring.ui.components.*
 import com.padelscoring.ui.theme.*
+import com.padelscoring.viewmodel.OfflineLauncherViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OfflineQuickLauncherScreen(
-    onLaunchTournament: (playerNames: List<String>, targetPoints: Int) -> Unit = { _, _ -> }
+    viewModel: OfflineLauncherViewModel? = null,
+    onLaunchTournament: (playerNames: List<String>, targetPoints: Int) -> Unit = { _, _ -> },
+    onTournamentCreated: (tournamentId: String) -> Unit = {}
 ) {
     val haptics = rememberPadelHaptics()
-    var selectedPlayerCount by remember { mutableIntStateOf(8) }
-    var selectedTargetPoints by remember { mutableIntStateOf(32) }
+    val vmState = viewModel?.uiState?.collectAsState()?.value
+
+    var localPlayerCount by remember { mutableIntStateOf(8) }
+    var localTargetPoints by remember { mutableIntStateOf(32) }
     val playerCountOptions = listOf(4, 8, 12, 16)
     val targetPointOptions = listOf(21, 24, 32)
 
-    val playerNames = remember {
+    val localPlayerNames = remember {
         mutableStateListOf(
             "Player 1", "Player 2", "Player 3", "Player 4",
             "Player 5", "Player 6", "Player 7", "Player 8"
         )
     }
 
-    var newNameInput by remember { mutableStateOf("") }
+    val selectedPlayerCount = vmState?.selectedPlayerCount ?: localPlayerCount
+    val selectedTargetPoints = vmState?.selectedTargetPoints ?: localTargetPoints
+    val playerRoster = vmState?.playerRoster ?: localPlayerNames
 
     Scaffold(
         containerColor = PadelObsidianDarkest,
@@ -68,10 +75,15 @@ fun OfflineQuickLauncherScreen(
                     text = "KICKOFF AMERICANO ($selectedPlayerCount PLAYERS)",
                     onClick = {
                         haptics.heavyConfirm()
-                        onLaunchTournament(
-                            playerNames.take(selectedPlayerCount),
-                            selectedTargetPoints
-                        )
+                        val activePlayers = playerRoster.take(selectedPlayerCount)
+                        if (viewModel != null) {
+                            viewModel.kickoffTournament { id ->
+                                onTournamentCreated(id)
+                                onLaunchTournament(activePlayers, selectedTargetPoints)
+                            }
+                        } else {
+                            onLaunchTournament(activePlayers, selectedTargetPoints)
+                        }
                     },
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -130,10 +142,13 @@ fun OfflineQuickLauncherScreen(
                                     )
                                     .clickable {
                                         haptics.tick()
-                                        selectedPlayerCount = count
-                                        // Ensure list has enough players
-                                        while (playerNames.size < count) {
-                                            playerNames.add("Player ${playerNames.size + 1}")
+                                        if (viewModel != null) {
+                                            viewModel.setPlayerCount(count)
+                                        } else {
+                                            localPlayerCount = count
+                                            while (localPlayerNames.size < count) {
+                                                localPlayerNames.add("Player ${localPlayerNames.size + 1}")
+                                            }
                                         }
                                     },
                                 contentAlignment = Alignment.Center
@@ -190,7 +205,11 @@ fun OfflineQuickLauncherScreen(
                                     )
                                     .clickable {
                                         haptics.tick()
-                                        selectedTargetPoints = pts
+                                        if (viewModel != null) {
+                                            viewModel.setTargetPoints(pts)
+                                        } else {
+                                            localTargetPoints = pts
+                                        }
                                     },
                                 contentAlignment = Alignment.Center
                             ) {
@@ -218,7 +237,7 @@ fun OfflineQuickLauncherScreen(
                 )
             }
 
-            itemsIndexed(playerNames.take(selectedPlayerCount)) { index, name ->
+            itemsIndexed(playerRoster.take(selectedPlayerCount)) { index, name ->
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
