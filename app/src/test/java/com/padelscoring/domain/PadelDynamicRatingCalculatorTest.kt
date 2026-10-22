@@ -242,4 +242,38 @@ class PadelDynamicRatingCalculatorTest {
         assertTrue("Loser u3 must have decreased level", results["u3"]!!.newLevel < 2.50)
         assertTrue("Loser u4 must have decreased level", results["u4"]!!.newLevel < 2.50)
     }
+
+    @Test
+    fun testAsymmetricRatingShieldsWeakerPartnerOnLoss() {
+        // Team 1: p1 (stronger: 4.0), p2 (weaker: 2.0)
+        // Team 2: p3 (3.0), p4 (3.0)
+        val t1p1 = PlayerRating("p1", level = 4.00, confidence = 0.50)
+        val t1p2 = PlayerRating("p2", level = 2.00, confidence = 0.50)
+        val t2p1 = PlayerRating("p3", level = 3.00, confidence = 0.50)
+        val t2p2 = PlayerRating("p4", level = 3.00, confidence = 0.50)
+
+        // Team 2 wins (Team 1 loses)
+        val results = PadelDynamicRatingCalculator.calculateMatchRating(
+            team1Player1 = t1p1,
+            team1Player2 = t1p2,
+            team2Player1 = t2p1,
+            team2Player2 = t2p2,
+            team1GamesWon = 8,
+            team2GamesWon = 12,
+            winningTeam = 2
+        )
+
+        val rStronger = results["p1"]!!
+        val rWeaker = results["p2"]!!
+
+        // Both lose rating (deltas are negative)
+        assertTrue(rStronger.delta < 0)
+        assertTrue(rWeaker.delta < 0)
+
+        // The stronger partner must absorb more loss (more negative delta), shielding the weaker partner
+        assertTrue(
+            "Stronger player (${rStronger.delta}) should lose more or equal to weaker player (${rWeaker.delta})",
+            rStronger.delta <= rWeaker.delta
+        )
+    }
 }

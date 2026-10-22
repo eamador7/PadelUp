@@ -62,11 +62,44 @@ object MexicanoEngine {
         }
 
         val courtsToUse = minOf(totalCourts, sortedParticipants.size / 4)
+        val activeSlots = courtsToUse * 4
+
+        // Fair rest / bye rotation for odd or irregular player counts
+        val activeParticipants = if (sortedParticipants.size > activeSlots) {
+            val playCounts = mutableMapOf<String, Int>()
+            for (round in pastRounds) {
+                for (match in round.matches) {
+                    listOf(
+                        match.team1Player1Id,
+                        match.team1Player2Id,
+                        match.team2Player1Id,
+                        match.team2Player2Id
+                    ).forEach { pid ->
+                        playCounts[pid] = (playCounts[pid] ?: 0) + 1
+                    }
+                }
+            }
+            // Prioritize players who have played the fewest rounds to prevent starvation
+            val sortedByPlayFrequency = sortedParticipants.sortedWith(
+                compareBy<TournamentParticipant> { playCounts[it.playerId] ?: 0 }
+                    .thenBy { it.rank }
+            )
+            sortedByPlayFrequency.take(activeSlots).sortedWith(
+                compareBy<TournamentParticipant> { it.rank }
+                    .thenByDescending { it.totalPoints }
+                    .thenByDescending { it.totalDiff }
+                    .thenBy { it.seed }
+                    .thenBy { it.playerName }
+            )
+        } else {
+            sortedParticipants
+        }
+
         val roundId = UUID.randomUUID().toString()
         val matches = mutableListOf<TournamentMatch>()
 
         for (courtIndex in 0 until courtsToUse) {
-            val quartet = sortedParticipants.subList(courtIndex * 4, (courtIndex + 1) * 4)
+            val quartet = activeParticipants.subList(courtIndex * 4, (courtIndex + 1) * 4)
             val p1 = quartet[0]
             val p2 = quartet[1]
             val p3 = quartet[2]

@@ -64,31 +64,6 @@ fun OfflineQuickLauncherScreen(
                     containerColor = PadelObsidian
                 )
             )
-        },
-        bottomBar = {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(PadelObsidian)
-                    .padding(20.dp)
-            ) {
-                PadelPrimaryButton(
-                    text = "KICKOFF AMERICANO ($selectedPlayerCount PLAYERS)",
-                    onClick = {
-                        haptics.heavyConfirm()
-                        val activePlayers = playerRoster.take(selectedPlayerCount)
-                        if (viewModel != null) {
-                            viewModel.kickoffTournament { id ->
-                                onTournamentCreated(id)
-                                onLaunchTournament(activePlayers, selectedTargetPoints)
-                            }
-                        } else {
-                            onLaunchTournament(activePlayers, selectedTargetPoints)
-                        }
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
         }
     ) { innerPadding ->
         LazyColumn(
@@ -278,16 +253,44 @@ fun OfflineQuickLauncherScreen(
                         )
                     }
 
-                    Text(
-                        text = "Edit ✎",
-                        style = PadelTypography.labelSmall.copy(
-                            color = PadelTextMuted
-                        ),
-                        modifier = Modifier.clickable {
-                            // Quick rename modal or inline edit
-                        }
-                    )
+                    Box(
+                        modifier = Modifier
+                            .minimumInteractiveComponentSize()
+                            .clickable {
+                                // Quick rename modal or inline edit
+                            },
+                        contentAlignment = Alignment.CenterEnd
+                    ) {
+                        Text(
+                            text = "Edit ✎",
+                            style = PadelTypography.labelSmall.copy(
+                                color = PadelTextMuted,
+                                fontWeight = FontWeight.Medium
+                            )
+                        )
+                    }
                 }
+            }
+
+            // Launch Action Button embedded cleanly in the scroll body
+            item {
+                Spacer(modifier = Modifier.height(8.dp))
+                PadelPrimaryButton(
+                    text = "KICKOFF AMERICANO ($selectedPlayerCount PLAYERS)",
+                    onClick = {
+                        haptics.heavyConfirm()
+                        val activePlayers = playerRoster.take(selectedPlayerCount)
+                        if (viewModel != null) {
+                            viewModel.kickoffTournament { id ->
+                                onTournamentCreated(id)
+                                onLaunchTournament(activePlayers, selectedTargetPoints)
+                            }
+                        } else {
+                            onLaunchTournament(activePlayers, selectedTargetPoints)
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                )
             }
         }
     }

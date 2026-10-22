@@ -31,6 +31,19 @@ interface TournamentDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertMatches(matches: List<TournamentMatchEntity>)
 
+    @Transaction
+    suspend fun insertCompleteTournament(
+        tournament: TournamentEntity,
+        participants: List<TournamentParticipantEntity>,
+        rounds: List<TournamentRoundEntity>,
+        matches: List<TournamentMatchEntity>
+    ) {
+        insertTournament(tournament)
+        insertParticipants(participants)
+        insertRounds(rounds)
+        insertMatches(matches)
+    }
+
     @Query("SELECT * FROM tournaments WHERE id = :id")
     fun getTournamentFlow(id: String): Flow<TournamentEntity?>
 

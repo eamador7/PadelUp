@@ -201,4 +201,48 @@ class MexicanoEngineTest {
             assertTrue(e.message!!.contains("at least 4 participants"))
         }
     }
+
+    @Test
+    fun testOddPlayerCountsRotateRestsEvenlyWithoutStarvation() {
+        val tournamentId = "mex_odd_5"
+        val participants = (1..5).map { rank ->
+            TournamentParticipant(
+                tournamentId = tournamentId,
+                playerId = "p$rank",
+                playerName = "Player $rank",
+                rank = rank
+            )
+        }
+
+        val pastRounds = mutableListOf<TournamentRound>()
+        val restCounts = mutableMapOf<String, Int>()
+
+        // Generate 5 rounds for 5 players (each should play 4 rounds and rest 1 round)
+        for (roundNum in 1..5) {
+            val round = MexicanoEngine.generateNextRound(
+                tournamentId = tournamentId,
+                roundNumber = roundNum,
+                rankedParticipants = participants,
+                pastRounds = pastRounds,
+                totalCourts = 1
+            )
+            pastRounds.add(round)
+
+            val match = round.matches.first()
+            val active = setOf(match.team1Player1Id, match.team1Player2Id, match.team2Player1Id, match.team2Player2Id)
+            assertEquals(4, active.size)
+
+            participants.forEach { p ->
+                if (p.playerId !in active) {
+                    restCounts[p.playerId] = (restCounts[p.playerId] ?: 0) + 1
+                }
+            }
+        }
+
+        // Assert that every single player rested exactly once (zero starvation!)
+        (1..5).forEach { rank ->
+            val pid = "p$rank"
+            assertEquals("Player $pid should rest exactly 1 time across 5 rounds", 1, restCounts[pid] ?: 0)
+        }
+    }
 }

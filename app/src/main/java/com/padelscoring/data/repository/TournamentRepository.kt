@@ -136,10 +136,12 @@ class TournamentRepositoryImpl(
             round.matches.map { it.toEntity() }
         }
 
-        tournamentDao.insertTournament(tournamentEntity)
-        tournamentDao.insertParticipants(participantEntities)
-        tournamentDao.insertRounds(roundEntities)
-        tournamentDao.insertMatches(matchEntities)
+        tournamentDao.insertCompleteTournament(
+            tournament = tournamentEntity,
+            participants = participantEntities,
+            rounds = roundEntities,
+            matches = matchEntities
+        )
 
         return tournamentId
     }
@@ -192,10 +194,12 @@ class TournamentRepositoryImpl(
             totalCourts = totalCourts
         )
 
-        tournamentDao.insertTournament(tournamentEntity)
-        tournamentDao.insertParticipants(participantEntities)
-        tournamentDao.insertRounds(listOf(round1.toEntity(status = "ACTIVE")))
-        tournamentDao.insertMatches(round1.matches.map { it.toEntity() })
+        tournamentDao.insertCompleteTournament(
+            tournament = tournamentEntity,
+            participants = participantEntities,
+            rounds = listOf(round1.toEntity(status = "ACTIVE")),
+            matches = round1.matches.map { it.toEntity() }
+        )
 
         return tournamentId
     }

@@ -128,7 +128,14 @@ object PadelDynamicRatingCalculator {
 
         fun computePlayerResult(player: PlayerRating, teamMean: Double, teamDelta: Double): RatingResult {
             val safeMean = if (teamMean <= 0.0) 1.0 else teamMean
-            val asymmetricFactor = 1.0 + 0.25 * ((safeMean - player.level) / safeMean)
+            val relativeDiff = (safeMean - player.level) / safeMean
+            // On a win (teamDelta >= 0), weaker partner receives a bonus.
+            // On a loss (teamDelta < 0), stronger partner absorbs more impact, shielding the weaker partner.
+            val asymmetricFactor = if (teamDelta >= 0.0) {
+                1.0 + 0.25 * relativeDiff
+            } else {
+                1.0 - 0.25 * relativeDiff
+            }
             val confidenceFactor = 1.30 - 0.50 * player.confidence.coerceIn(0.10, 1.00)
             val individualDelta = teamDelta * asymmetricFactor * confidenceFactor
 

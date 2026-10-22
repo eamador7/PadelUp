@@ -51,6 +51,11 @@ class MatchRepositoryImpl(
             ?: throw IllegalArgumentException("Match with id $matchId not found")
         val match = matchEntity.toDomain()
 
+        // Guard against duplicate confirmation to prevent double rating adjustments
+        if (match.confirmationStatus == "CONFIRMED") {
+            return
+        }
+
         // Transition match confirmation status to CONFIRMED
         matchDao.updateConfirmationStatus(matchId, "CONFIRMED")
 

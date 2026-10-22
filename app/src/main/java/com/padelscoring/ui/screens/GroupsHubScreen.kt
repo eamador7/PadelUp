@@ -71,21 +71,6 @@ fun GroupsHubScreen(
                     containerColor = PadelObsidian
                 )
             )
-        },
-        bottomBar = {
-            // Master Action Bar: Start Americano
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(PadelObsidian)
-                    .padding(20.dp)
-            ) {
-                PadelPrimaryButton(
-                    text = "START AMERICANO TOURNAMENT",
-                    onClick = { showStartModal = true },
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
         }
     ) { innerPadding ->
         LazyColumn(
@@ -96,6 +81,14 @@ fun GroupsHubScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp),
             contentPadding = PaddingValues(top = 16.dp, bottom = 24.dp)
         ) {
+            // Master Action Button inside scroll view (eliminates stacked double bottom bars)
+            item {
+                PadelPrimaryButton(
+                    text = "START AMERICANO TOURNAMENT",
+                    onClick = { showStartModal = true },
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
             // Group Hero Overview Card
             item {
                 Column(

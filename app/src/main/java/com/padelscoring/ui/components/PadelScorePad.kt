@@ -215,10 +215,7 @@ fun PadelQuickScorePad(
                         isPrimary = true,
                         onClick = {
                             if (scoreA + 1 <= targetPoints) {
-                                val newA = scoreA + 1
-                                onScoreAChanged(newA)
-                                // Auto-balance B in fixed total mode
-                                onScoreBChanged((targetPoints - newA).coerceAtLeast(0))
+                                onScoreAChanged(scoreA + 1)
                             }
                         },
                         modifier = Modifier.weight(1f),
@@ -229,9 +226,7 @@ fun PadelQuickScorePad(
                         isPrimary = false,
                         onClick = {
                             if (scoreA > 0) {
-                                val newA = scoreA - 1
-                                onScoreAChanged(newA)
-                                onScoreBChanged((targetPoints - newA).coerceAtLeast(0))
+                                onScoreAChanged(scoreA - 1)
                             }
                         },
                         modifier = Modifier.weight(1f),
@@ -278,9 +273,7 @@ fun PadelQuickScorePad(
                         isPrimary = true,
                         onClick = {
                             if (scoreB + 1 <= targetPoints) {
-                                val newB = scoreB + 1
-                                onScoreBChanged(newB)
-                                onScoreAChanged((targetPoints - newB).coerceAtLeast(0))
+                                onScoreBChanged(scoreB + 1)
                             }
                         },
                         modifier = Modifier.weight(1f),
@@ -291,9 +284,7 @@ fun PadelQuickScorePad(
                         isPrimary = false,
                         onClick = {
                             if (scoreB > 0) {
-                                val newB = scoreB - 1
-                                onScoreBChanged(newB)
-                                onScoreAChanged((targetPoints - newB).coerceAtLeast(0))
+                                onScoreBChanged(scoreB - 1)
                             }
                         },
                         modifier = Modifier.weight(1f),

@@ -37,7 +37,8 @@ fun AmericanoCommandCenterScreen(
     initialActiveCourt: Int? = null,
     initialMatchesFinished: Boolean = false,
     onNavigateBack: () -> Unit = {},
-    onMatchSelected: (courtNumber: Int) -> Unit = {}
+    onMatchSelected: (matchId: String) -> Unit = {},
+    onLaunchNewTournament: () -> Unit = {}
 ) {
     val haptics = rememberPadelHaptics()
     val vmState = viewModel?.uiState?.collectAsState()?.value
@@ -87,6 +88,8 @@ fun AmericanoCommandCenterScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(PadelObsidian)
+                    .statusBarsPadding()
+                    .displayCutoutPadding()
                     .padding(horizontal = 20.dp, vertical = 16.dp)
             ) {
                 Row(
@@ -229,7 +232,7 @@ fun AmericanoCommandCenterScreen(
                                     isCompleted = match.isCompleted,
                                     onClick = {
                                         activeScoringCourt = if (activeScoringCourt == match.courtNumber) null else match.courtNumber
-                                        onMatchSelected(match.courtNumber)
+                                        onMatchSelected(match.matchId)
                                     }
                                 )
                             }
@@ -255,6 +258,37 @@ fun AmericanoCommandCenterScreen(
                                 }
                             }
                         }
+                    } else if (viewModel != null && vmState?.tournamentId.isNullOrEmpty()) {
+                        item {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 40.dp, horizontal = 16.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.spacedBy(16.dp)
+                            ) {
+                                PadelRacketIcon(size = 48.dp)
+                                Text(
+                                    text = "NO ACTIVE TOURNAMENT",
+                                    style = PadelTypography.titleLarge.copy(
+                                        fontWeight = FontWeight.ExtraBold,
+                                        color = PadelTextPrimary
+                                    )
+                                )
+                                Text(
+                                    text = "Launch an offline tournament or create one from Groups to begin dynamic Americano scoring.",
+                                    style = PadelTypography.bodyMedium.copy(
+                                        color = PadelTextSecondary,
+                                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                                    )
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                PadelPrimaryButton(
+                                    text = "QUICK LAUNCH TOURNAMENT",
+                                    onClick = onLaunchNewTournament
+                                )
+                            }
+                        }
                     } else {
                         // Fallback preview courts
                         item {
@@ -266,7 +300,7 @@ fun AmericanoCommandCenterScreen(
                                 isCompleted = court1Finished,
                                 onClick = {
                                     activeScoringCourt = if (activeScoringCourt == 1) null else 1
-                                    onMatchSelected(1)
+                                    onMatchSelected("preview-court-1")
                                 }
                             )
                         }
@@ -306,7 +340,7 @@ fun AmericanoCommandCenterScreen(
                                 isCompleted = court2Finished,
                                 onClick = {
                                     activeScoringCourt = if (activeScoringCourt == 2) null else 2
-                                    onMatchSelected(2)
+                                    onMatchSelected("preview-court-2")
                                 }
                             )
                         }

@@ -82,6 +82,7 @@ fun PadelBottomBar(
         modifier = modifier
             .fillMaxWidth()
             .background(PadelObsidian)
+            .windowInsetsPadding(WindowInsets.navigationBars)
     ) {
         HorizontalDivider(
             thickness = 1.dp,
@@ -91,7 +92,8 @@ fun PadelBottomBar(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(68.dp),
+                .heightIn(min = 64.dp)
+                .padding(vertical = 4.dp),
             horizontalArrangement = Arrangement.SpaceAround,
             verticalAlignment = Alignment.CenterVertically
         ) {

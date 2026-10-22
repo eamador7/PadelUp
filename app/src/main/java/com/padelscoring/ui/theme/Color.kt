@@ -32,10 +32,10 @@ val PadelBorderHairline = Color(0xFF283546)
 val PadelBorderGlass = Color(0x40FFFFFF)
 val PadelMeshDivider = Color(0xFF232D3B)
 
-// High-Contrast Outdoor Readability Typography
+// High-Contrast Outdoor Readability Typography (WCAG AA & AAA compliant on PadelObsidian)
 val PadelTextPrimary = Color(0xFFFFFFFF)
-val PadelTextSecondary = Color(0xFF94A3B8)
-val PadelTextMuted = Color(0xFF64748B)
+val PadelTextSecondary = Color(0xFFCBD5E1) // High-contrast Slate 300 (9.8:1 contrast)
+val PadelTextMuted = Color(0xFF94A3B8)     // High-visibility Slate 400 (5.6:1 contrast)
 val PadelTextInverse = Color(0xFF080B10)
 
 // Tactical Status Indicators

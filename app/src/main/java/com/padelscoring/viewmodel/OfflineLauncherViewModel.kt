@@ -2,7 +2,6 @@ package com.padelscoring.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.NavController
 import com.padelscoring.data.repository.TournamentRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -107,15 +106,6 @@ class OfflineLauncherViewModel(
                     errorMessage = e.message
                 )
             }
-        }
-    }
-
-    /**
-     * NavController convenience overload: creates tournament and navigates to Americano Command Center.
-     */
-    fun kickoffTournament(navController: NavController) {
-        kickoffTournament { tournamentId ->
-            navController.navigate("americano?id=$tournamentId")
         }
     }
 }
