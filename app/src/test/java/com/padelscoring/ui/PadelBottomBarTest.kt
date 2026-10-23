@@ -20,7 +20,7 @@ class PadelBottomBarTest {
     val composeTestRule = createComposeRule()
 
     @Test
-    fun bottomBarRendersAllFourTabs() {
+    fun bottomBarRendersCoreTabs() {
         composeTestRule.setContent {
             PadelTheme {
                 PadelBottomBar(
@@ -31,12 +31,10 @@ class PadelBottomBarTest {
         }
 
         composeTestRule.onNodeWithText("Americano").assertIsDisplayed()
-        composeTestRule.onNodeWithText("Quick Launch").assertIsDisplayed()
         composeTestRule.onNodeWithText("Groups").assertIsDisplayed()
         composeTestRule.onNodeWithText("Profile").assertIsDisplayed()
 
         composeTestRule.onNodeWithTag("nav_americano").assertIsDisplayed()
-        composeTestRule.onNodeWithTag("nav_quick_launcher").assertIsDisplayed()
         composeTestRule.onNodeWithTag("nav_groups").assertIsDisplayed()
         composeTestRule.onNodeWithTag("nav_profile").assertIsDisplayed()
     }
@@ -54,7 +52,6 @@ class PadelBottomBarTest {
 
         // Americano should be selected, others unselected
         composeTestRule.onNodeWithTag("nav_americano").assertIsSelected()
-        composeTestRule.onNodeWithTag("nav_quick_launcher").assertIsNotSelected()
         composeTestRule.onNodeWithTag("nav_groups").assertIsNotSelected()
         composeTestRule.onNodeWithTag("nav_profile").assertIsNotSelected()
     }
@@ -74,9 +71,6 @@ class PadelBottomBarTest {
 
         composeTestRule.onNodeWithTag("nav_profile").performClick()
         assertEquals(PadelNavigationItem.Profile, selectedItem)
-
-        composeTestRule.onNodeWithTag("nav_quick_launcher").performClick()
-        assertEquals(PadelNavigationItem.QuickLaunch, selectedItem)
 
         composeTestRule.onNodeWithTag("nav_groups").performClick()
         assertEquals(PadelNavigationItem.Groups, selectedItem)

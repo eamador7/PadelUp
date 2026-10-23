@@ -28,10 +28,6 @@ class MainActivityCrashReproTest {
         composeTestRule.onNodeWithTag("nav_groups").performClick()
         composeTestRule.waitForIdle()
 
-        // Tap Quick Launch
-        composeTestRule.onNodeWithTag("nav_quick_launcher").performClick()
-        composeTestRule.waitForIdle()
-
         // Tap Americano
         composeTestRule.onNodeWithTag("nav_americano").performClick()
         composeTestRule.waitForIdle()
