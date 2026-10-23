@@ -36,7 +36,8 @@ fun GroupsHubScreen(
     groupName: String = "Friday Night Padel Club",
     memberCount: Int = 16,
     onStartAmericanoOnline: () -> Unit = {},
-    onStartAmericanoOffline: () -> Unit = {}
+    onStartAmericanoOffline: () -> Unit = {},
+    onStartSingleMatch: () -> Unit = {}
 ) {
     val vmState = viewModel?.uiState?.collectAsState()?.value
     var showStartModal by remember { mutableStateOf(false) }
@@ -349,100 +350,22 @@ fun GroupsHubScreen(
         }
     }
 
-    // Modal to choose Americano Tournament Mode
+    // Modal to choose Match / Tournament Mode
     if (showStartModal) {
-        AlertDialog(
+        StartActivityModal(
             onDismissRequest = { showStartModal = false },
-            title = {
-                Text(
-                    text = "Launch Americano Tournament",
-                    style = PadelTypography.headlineSmall.copy(
-                        color = PadelTextPrimary,
-                        fontWeight = FontWeight.ExtraBold
-                    )
-                )
+            onSelectSingleMatch = {
+                showStartModal = false
+                onStartSingleMatch()
             },
-            text = {
-                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Text(
-                        text = "Choose how players will join and record scores for this Americano.",
-                        style = PadelTypography.bodyMedium.copy(color = PadelTextSecondary)
-                    )
-
-                    // Option 1: Fast Offline Mode
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(PadelShapes.medium)
-                            .background(PadelSurfaceElevated)
-                            .border(1.5.dp, PadelVoltBorder, PadelShapes.medium)
-                            .clickable {
-                                showStartModal = false
-                                onStartAmericanoOffline()
-                            }
-                            .padding(14.dp)
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Text(text = "⚡", fontSize = 18.sp)
-                            Text(
-                                text = "Single-Device Quick Kickoff",
-                                style = PadelTypography.titleMedium.copy(
-                                    fontWeight = FontWeight.Bold,
-                                    color = PadelVolt
-                                )
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = "Zero login needed. Quick guest roster (4, 8, 12, 16 players), instant kickoff.",
-                            style = PadelTypography.bodySmall.copy(color = PadelTextSecondary)
-                        )
-                    }
-
-                    // Option 2: Online Group Mode
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(PadelShapes.medium)
-                            .background(PadelSurfaceElevated)
-                            .border(1.dp, PadelBorderHairline, PadelShapes.medium)
-                            .clickable {
-                                showStartModal = false
-                                onStartAmericanoOnline()
-                            }
-                            .padding(14.dp)
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Text(text = "🌐", fontSize = 18.sp)
-                            Text(
-                                text = "Club Squad Live Sync",
-                                style = PadelTypography.titleMedium.copy(
-                                    fontWeight = FontWeight.Bold,
-                                    color = PadelTurfCyan
-                                )
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = "Players log scores simultaneously from their own devices and update club rankings.",
-                            style = PadelTypography.bodySmall.copy(color = PadelTextSecondary)
-                        )
-                    }
-                }
+            onSelectGroupAmericano = {
+                showStartModal = false
+                onStartAmericanoOnline()
             },
-            confirmButton = {},
-            dismissButton = {
-                TextButton(onClick = { showStartModal = false }) {
-                    Text(text = "Dismiss", color = PadelTextMuted)
-                }
-            },
-            containerColor = PadelSurface
+            onSelectGuestAmericano = {
+                showStartModal = false
+                onStartAmericanoOffline()
+            }
         )
     }
 }

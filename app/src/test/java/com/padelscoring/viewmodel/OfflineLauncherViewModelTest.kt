@@ -96,4 +96,27 @@ class OfflineLauncherViewModelTest {
         assertEquals(32, created?.targetPoints)
         assertEquals(1, created?.totalCourts)
     }
+
+    @Test
+    fun testStepperControlsAndLargeCounts() {
+        assertEquals(8, viewModel.uiState.value.selectedPlayerCount)
+
+        viewModel.incrementPlayerCount()
+        assertEquals(9, viewModel.uiState.value.selectedPlayerCount)
+        assertEquals(2, viewModel.uiState.value.selectedCourts)
+        assertEquals(1, viewModel.uiState.value.restingPlayersCount)
+
+        viewModel.decrementPlayerCount()
+        assertEquals(8, viewModel.uiState.value.selectedPlayerCount)
+        assertEquals(0, viewModel.uiState.value.restingPlayersCount)
+
+        viewModel.setPlayerCount(32)
+        assertEquals(32, viewModel.uiState.value.selectedPlayerCount)
+        assertEquals(8, viewModel.uiState.value.selectedCourts)
+        assertTrue(viewModel.uiState.value.playerRoster.size >= 32)
+
+        viewModel.setCourtCount(4)
+        assertEquals(4, viewModel.uiState.value.selectedCourts)
+        assertEquals(16, viewModel.uiState.value.restingPlayersCount)
+    }
 }

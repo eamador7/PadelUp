@@ -69,7 +69,7 @@ fun PadelPrimaryButton(
         Text(
             text = text.uppercase(),
             style = PadelTypography.labelLarge.copy(
-                color = if (enabled) PadelTextInverse else PadelTextMuted,
+                color = if (enabled) PadelOnPrimary else PadelTextMuted,
                 fontWeight = FontWeight.ExtraBold,
                 letterSpacing = 1.sp
             ),

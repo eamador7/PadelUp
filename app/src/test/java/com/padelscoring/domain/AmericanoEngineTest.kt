@@ -285,4 +285,72 @@ class AmericanoEngineTest {
         // All ranks must be sequential 1..N
         assertEquals(listOf(1, 2, 3, 4), leaderboard.map { it.rank })
     }
+
+    @Test
+    fun test24PlayerAmericanoScheduleExecutesQuicklyAndGeneratesValidRounds() {
+        val players = (1..24).map { "player_$it" }
+        val startTime = System.currentTimeMillis()
+        val schedule = AmericanoEngine.generateSchedule(players, totalCourts = 6, totalRounds = 5)
+        val elapsed = System.currentTimeMillis() - startTime
+
+        assertTrue("24-player schedule generation should complete in under 500ms (took ${elapsed}ms)", elapsed < 500)
+        assertEquals(5, schedule.size)
+
+        for (round in schedule) {
+            assertEquals("6 courts per round for 24 players", 6, round.matches.size)
+            val roundPlayers = mutableListOf<String>()
+            for (match in round.matches) {
+                assertNotEquals(match.team1Player1Id, match.team1Player2Id)
+                assertNotEquals(match.team2Player1Id, match.team2Player2Id)
+                roundPlayers.addAll(listOf(match.team1Player1Id, match.team1Player2Id, match.team2Player1Id, match.team2Player2Id))
+            }
+            assertEquals("All 24 players must play in each round when courts = 6", 24, roundPlayers.distinct().size)
+        }
+    }
+
+    @Test
+    fun test32PlayerAmericanoScheduleExecutesQuicklyAndGeneratesValidRounds() {
+        val players = (1..32).map { "player_$it" }
+        val startTime = System.currentTimeMillis()
+        val schedule = AmericanoEngine.generateSchedule(players, totalCourts = 8, totalRounds = 4)
+        val elapsed = System.currentTimeMillis() - startTime
+
+        assertTrue("32-player schedule generation should complete in under 800ms (took ${elapsed}ms)", elapsed < 800)
+        assertEquals(4, schedule.size)
+
+        for (round in schedule) {
+            assertEquals("8 courts per round for 32 players", 8, round.matches.size)
+            val roundPlayers = mutableListOf<String>()
+            for (match in round.matches) {
+                roundPlayers.addAll(listOf(match.team1Player1Id, match.team1Player2Id, match.team2Player1Id, match.team2Player2Id))
+            }
+            assertEquals("All 32 players must play in each round when courts = 8", 32, roundPlayers.distinct().size)
+        }
+    }
+
+    @Test
+    fun test5PlayerOddCountAmericanoDistributesByesFairly() {
+        val players = listOf("p1", "p2", "p3", "p4", "p5")
+        val schedule = AmericanoEngine.generateSchedule(players, totalCourts = 1, totalRounds = 5)
+
+        assertEquals(5, schedule.size)
+        val byeCounts = players.associateWith { 0 }.toMutableMap()
+
+        for (round in schedule) {
+            assertEquals(1, round.matches.size)
+            val match = round.matches[0]
+            val active = setOf(match.team1Player1Id, match.team1Player2Id, match.team2Player1Id, match.team2Player2Id)
+            assertEquals("Exactly 4 players play on 1 court", 4, active.size)
+
+            val resting = players.filter { it !in active }
+            assertEquals("Exactly 1 player on bye each round for 5 players", 1, resting.size)
+            val byePlayer = resting[0]
+            byeCounts[byePlayer] = (byeCounts[byePlayer] ?: 0) + 1
+        }
+
+        // Over 5 rounds with 5 players and 1 court, every player must have exactly 1 bye!
+        for (p in players) {
+            assertEquals("Player $p should have exactly 1 bye across 5 rounds", 1, byeCounts[p])
+        }
+    }
 }

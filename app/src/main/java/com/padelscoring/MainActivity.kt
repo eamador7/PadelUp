@@ -92,7 +92,9 @@ class MainActivity : ComponentActivity() {
                                 viewModel = vm,
                                 onNavigateBack = { navController.popBackStack() },
                                 onMatchSelected = { matchId -> navController.navigate("confirmation?matchId=$matchId") },
-                                onLaunchNewTournament = { navController.navigate("quick_launcher") }
+                                onLaunchNewTournament = { navController.navigate("quick_launcher") },
+                                onStartSingleMatch = { navController.navigate("setup") },
+                                onStartGroupTournament = { navController.navigate("quick_launcher") }
                             )
                         }
 
@@ -113,7 +115,9 @@ class MainActivity : ComponentActivity() {
                                 viewModel = vm,
                                 onNavigateBack = { navController.popBackStack() },
                                 onMatchSelected = { matchId -> navController.navigate("confirmation?matchId=$matchId") },
-                                onLaunchNewTournament = { navController.navigate("quick_launcher") }
+                                onLaunchNewTournament = { navController.navigate("quick_launcher") },
+                                onStartSingleMatch = { navController.navigate("setup") },
+                                onStartGroupTournament = { navController.navigate("quick_launcher") }
                             )
                         }
 
@@ -136,7 +140,9 @@ class MainActivity : ComponentActivity() {
                                 viewModel = vm,
                                 onNavigateBack = { navController.popBackStack() },
                                 onMatchSelected = { matchId -> navController.navigate("confirmation?matchId=$matchId") },
-                                onLaunchNewTournament = { navController.navigate("quick_launcher") }
+                                onLaunchNewTournament = { navController.navigate("quick_launcher") },
+                                onStartSingleMatch = { navController.navigate("setup") },
+                                onStartGroupTournament = { navController.navigate("quick_launcher") }
                             )
                         }
 
@@ -205,8 +211,9 @@ class MainActivity : ComponentActivity() {
                             val vm: GroupsHubViewModel = viewModel(factory = factory)
                             GroupsHubScreen(
                                 viewModel = vm,
-                                onStartAmericanoOnline = { navController.navigate("americano") },
-                                onStartAmericanoOffline = { navController.navigate("quick_launcher") }
+                                onStartAmericanoOnline = { navController.navigate("quick_launcher") },
+                                onStartAmericanoOffline = { navController.navigate("quick_launcher") },
+                                onStartSingleMatch = { navController.navigate("setup") }
                             )
                         }
 
