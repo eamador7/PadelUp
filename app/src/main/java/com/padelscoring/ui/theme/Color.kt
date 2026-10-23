@@ -40,7 +40,6 @@ val PadelSurfaceGlass = Color(0xCC1A2330)    // Frosted glass overlay (80% opaci
 // Court Turf Accents (Premier Padel Classic Blue Turf)
 val PadelTurfBlue = Color(0xFF0E253F)
 val PadelTurfBlueAccent = Color(0xFF0091FF)
-val PadelTurfCyan = Color(0xFF00E5FF)
 
 // Court Lines & Metal Mesh Glass Accents
 val PadelBorderHairline = Color(0xFF283546)
