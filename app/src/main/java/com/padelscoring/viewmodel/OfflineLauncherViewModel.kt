@@ -14,8 +14,11 @@ import kotlinx.coroutines.launch
 data class OfflineLauncherUiState(
     val selectedPlayerCount: Int = 8,
     val selectedTargetPoints: Int = 32,
-    val playerCountOptions: List<Int> = listOf(4, 8, 12, 16),
+    val selectedCourts: Int = 2,
+    val isGroupMode: Boolean = false,
+    val playerCountOptions: List<Int> = listOf(4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 16, 20, 24, 28, 32),
     val targetPointOptions: List<Int> = listOf(21, 24, 32),
+    val courtOptions: List<Int> = listOf(1, 2, 3, 4, 5, 6, 7, 8),
     val playerRoster: List<String> = listOf(
         "Player 1", "Player 2", "Player 3", "Player 4",
         "Player 5", "Player 6", "Player 7", "Player 8"
@@ -23,7 +26,10 @@ data class OfflineLauncherUiState(
     val tournamentName: String = "Offline Americano",
     val isLaunching: Boolean = false,
     val errorMessage: String? = null
-)
+) {
+    val restingPlayersCount: Int
+        get() = maxOf(0, selectedPlayerCount - (selectedCourts * 4))
+}
 
 /**
  * MVI / StateFlow ViewModel powering the Offline Quick Launcher screen.
@@ -36,13 +42,41 @@ class OfflineLauncherViewModel(
     val uiState: StateFlow<OfflineLauncherUiState> = _uiState.asStateFlow()
 
     fun setPlayerCount(count: Int) {
+        val clamped = count.coerceIn(4, 32)
         val currentRoster = _uiState.value.playerRoster.toMutableList()
-        while (currentRoster.size < count) {
+        while (currentRoster.size < clamped) {
             currentRoster.add("Player ${currentRoster.size + 1}")
         }
+        val defaultCourts = maxOf(1, minOf(8, clamped / 4))
         _uiState.value = _uiState.value.copy(
-            selectedPlayerCount = count,
+            selectedPlayerCount = clamped,
+            selectedCourts = defaultCourts,
             playerRoster = currentRoster
+        )
+    }
+
+    fun incrementPlayerCount() {
+        if (_uiState.value.selectedPlayerCount < 32) {
+            setPlayerCount(_uiState.value.selectedPlayerCount + 1)
+        }
+    }
+
+    fun decrementPlayerCount() {
+        if (_uiState.value.selectedPlayerCount > 4) {
+            setPlayerCount(_uiState.value.selectedPlayerCount - 1)
+        }
+    }
+
+    fun setCourtCount(courts: Int) {
+        val maxPossible = maxOf(1, minOf(8, _uiState.value.selectedPlayerCount / 4))
+        val clamped = courts.coerceIn(1, maxPossible)
+        _uiState.value = _uiState.value.copy(selectedCourts = clamped)
+    }
+
+    fun setGroupMode(isGroup: Boolean) {
+        _uiState.value = _uiState.value.copy(
+            isGroupMode = isGroup,
+            tournamentName = if (isGroup) "Club Americano" else "Offline Americano"
         )
     }
 
@@ -78,7 +112,7 @@ class OfflineLauncherViewModel(
     }
 
     /**
-     * Creates the local offline tournament and invokes [onLaunched] with the new tournamentId.
+     * Creates the tournament and invokes [onLaunched] with the new tournamentId.
      */
     fun kickoffTournament(onLaunched: (tournamentId: String) -> Unit) {
         val state = _uiState.value
@@ -88,6 +122,8 @@ class OfflineLauncherViewModel(
             return
         }
 
+        val effectiveCourts = minOf(state.selectedCourts, maxOf(1, players.size / 4))
+
         _uiState.value = _uiState.value.copy(isLaunching = true, errorMessage = null)
         viewModelScope.launch {
             try {
@@ -95,8 +131,8 @@ class OfflineLauncherViewModel(
                     name = state.tournamentName,
                     playerNames = players,
                     targetPoints = state.selectedTargetPoints,
-                    totalCourts = state.selectedPlayerCount / 4,
-                    isOffline = true
+                    totalCourts = effectiveCourts,
+                    isOffline = !state.isGroupMode
                 )
                 _uiState.value = _uiState.value.copy(isLaunching = false)
                 onLaunched(tournamentId)

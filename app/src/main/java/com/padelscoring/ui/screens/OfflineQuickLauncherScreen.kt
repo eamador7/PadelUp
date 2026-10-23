@@ -32,8 +32,11 @@ fun OfflineQuickLauncherScreen(
 
     var localPlayerCount by remember { mutableIntStateOf(8) }
     var localTargetPoints by remember { mutableIntStateOf(32) }
-    val playerCountOptions = listOf(4, 8, 12, 16)
+    val primaryPresets = listOf(4, 8, 12, 16)
+    val irregularPresets = listOf(5, 6, 7, 9, 10, 20, 24, 32)
     val targetPointOptions = listOf(21, 24, 32)
+
+    var localCourts by remember { mutableIntStateOf(2) }
 
     val localPlayerNames = remember {
         mutableStateListOf(
@@ -49,6 +52,7 @@ fun OfflineQuickLauncherScreen(
 
     val selectedPlayerCount = vmState?.selectedPlayerCount ?: localPlayerCount
     val selectedTargetPoints = vmState?.selectedTargetPoints ?: localTargetPoints
+    val selectedCourts = vmState?.selectedCourts ?: localCourts
     val playerRoster = vmState?.playerRoster ?: localPlayerNames
 
     Scaffold(
@@ -132,7 +136,7 @@ fun OfflineQuickLauncherScreen(
                 OfflineShieldBadge()
             }
 
-            // Player Count Preset Selector
+            // Player Count Preset & Stepper Selector
             item {
                 Column(
                     modifier = Modifier
@@ -140,47 +144,106 @@ fun OfflineQuickLauncherScreen(
                         .clip(PadelCourtCardShape)
                         .background(PadelSurface)
                         .border(1.dp, PadelBorderHairline, PadelCourtCardShape)
-                        .padding(16.dp)
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(14.dp)
                 ) {
+                    Text(
+                        text = "TOURNAMENT ROSTER SIZE",
+                        style = PadelTypography.labelSmall.copy(
+                            color = PadelTextMuted,
+                            letterSpacing = 1.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    )
+
+                    // Interactive Stepper Header
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(
-                            text = "TOURNAMENT ROSTER SIZE",
-                            style = PadelTypography.labelSmall.copy(
-                                color = PadelTextMuted,
-                                letterSpacing = 1.sp
+                        // Stepper Minus
+                        Box(
+                            modifier = Modifier
+                                .size(44.dp)
+                                .testTag("stepper_minus")
+                                .clip(CircleShape)
+                                .background(PadelSurfaceElevated)
+                                .border(1.dp, PadelBorderHairline, CircleShape)
+                                .clickable {
+                                    haptics.tick()
+                                    if (viewModel != null) {
+                                        viewModel.decrementPlayerCount()
+                                    } else if (localPlayerCount > 4) {
+                                        localPlayerCount--
+                                    }
+                                },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text("−", fontSize = 22.sp, color = PadelTextPrimary, fontWeight = FontWeight.Bold)
+                        }
+
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(
+                                text = "$selectedPlayerCount PLAYERS",
+                                style = PadelTypography.headlineMedium.copy(
+                                    fontWeight = FontWeight.ExtraBold,
+                                    color = PadelTextPrimary
+                                )
                             )
-                        )
-                        Text(
-                            text = "${selectedPlayerCount / 4} ${if (selectedPlayerCount == 4) "COURT" else "COURTS"}",
-                            style = PadelTypography.labelSmall.copy(
-                                color = PadelTurfCyan,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 10.sp
+                            val restingCount = maxOf(0, selectedPlayerCount - (selectedCourts * 4))
+                            Text(
+                                text = "${selectedCourts} ${if (selectedCourts == 1) "COURT" else "COURTS"}" +
+                                        if (restingCount > 0) " • $restingCount RESTING" else " • FULL ROTATION",
+                                style = PadelTypography.labelSmall.copy(
+                                    color = if (restingCount > 0) PadelTurfCyan else PadelBrandBlue,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 11.sp
+                                )
                             )
-                        )
+                        }
+
+                        // Stepper Plus
+                        Box(
+                            modifier = Modifier
+                                .size(44.dp)
+                                .testTag("stepper_plus")
+                                .clip(CircleShape)
+                                .background(PadelSurfaceElevated)
+                                .border(1.dp, PadelBorderHairline, CircleShape)
+                                .clickable {
+                                    haptics.tick()
+                                    if (viewModel != null) {
+                                        viewModel.incrementPlayerCount()
+                                    } else if (localPlayerCount < 32) {
+                                        localPlayerCount++
+                                        while (localPlayerNames.size < localPlayerCount) {
+                                            localPlayerNames.add("Player ${localPlayerNames.size + 1}")
+                                        }
+                                    }
+                                },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text("+", fontSize = 22.sp, color = PadelTextPrimary, fontWeight = FontWeight.Bold)
+                        }
                     }
 
-                    Spacer(modifier = Modifier.height(12.dp))
-
+                    // Primary Presets (4, 8, 12, 16)
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        playerCountOptions.forEach { count ->
+                        primaryPresets.forEach { count ->
                             val isSelected = selectedPlayerCount == count
                             Column(
                                 modifier = Modifier
                                     .weight(1f)
                                     .testTag("chip_players_$count")
                                     .clip(PadelShapes.medium)
-                                    .background(if (isSelected) PadelVolt else PadelSurfaceElevated)
+                                    .background(if (isSelected) PadelBrandBlue else PadelSurfaceElevated)
                                     .border(
                                         1.dp,
-                                        if (isSelected) PadelVolt else PadelBorderHairline,
+                                        if (isSelected) PadelBrandBlue else PadelBorderHairline,
                                         PadelShapes.medium
                                     )
                                     .clickable {
@@ -201,7 +264,7 @@ fun OfflineQuickLauncherScreen(
                                     text = "$count",
                                     style = PadelTypography.titleLarge.copy(
                                         fontWeight = FontWeight.ExtraBold,
-                                        color = if (isSelected) PadelTextInverse else PadelTextPrimary
+                                        color = if (isSelected) PadelOnPrimary else PadelTextPrimary
                                     )
                                 )
                                 Text(
@@ -209,7 +272,125 @@ fun OfflineQuickLauncherScreen(
                                     style = PadelTypography.labelSmall.copy(
                                         fontSize = 8.sp,
                                         fontWeight = FontWeight.Bold,
-                                        color = if (isSelected) PadelTextInverse.copy(alpha = 0.8f) else PadelTextMuted
+                                        color = if (isSelected) PadelOnPrimary.copy(alpha = 0.8f) else PadelTextMuted
+                                    )
+                                )
+                            }
+                        }
+                    }
+
+                    // Extended / Irregular Presets (5, 6, 7, 9, 10, 20, 24, 32)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        irregularPresets.forEach { count ->
+                            val isSelected = selectedPlayerCount == count
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .testTag("chip_players_$count")
+                                    .clip(PadelPillShape)
+                                    .background(if (isSelected) PadelBrandBlue else PadelSurfaceElevated)
+                                    .border(
+                                        1.dp,
+                                        if (isSelected) PadelBrandBlue else PadelBorderHairline,
+                                        PadelPillShape
+                                    )
+                                    .clickable {
+                                        haptics.tick()
+                                        if (viewModel != null) {
+                                            viewModel.setPlayerCount(count)
+                                        } else {
+                                            localPlayerCount = count
+                                            while (localPlayerNames.size < count) {
+                                                localPlayerNames.add("Player ${localPlayerNames.size + 1}")
+                                            }
+                                        }
+                                    }
+                                    .padding(vertical = 6.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = "$count",
+                                    style = PadelTypography.labelSmall.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 11.sp,
+                                        color = if (isSelected) PadelOnPrimary else PadelTextSecondary
+                                    )
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Dynamic Court Allocation Selector
+            item {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(PadelCourtCardShape)
+                        .background(PadelSurface)
+                        .border(1.dp, PadelBorderHairline, PadelCourtCardShape)
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "AVAILABLE COURTS",
+                            style = PadelTypography.labelSmall.copy(
+                                color = PadelTextMuted,
+                                letterSpacing = 1.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        )
+                        Text(
+                            text = "$selectedCourts ACTIVE",
+                            style = PadelTypography.labelSmall.copy(
+                                color = PadelBrandBlue,
+                                fontWeight = FontWeight.Bold
+                            )
+                        )
+                    }
+
+                    val maxAllowedCourts = maxOf(1, minOf(8, selectedPlayerCount / 4))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        (1..maxAllowedCourts).forEach { c ->
+                            val isSelected = selectedCourts == c
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clip(PadelShapes.medium)
+                                    .background(if (isSelected) PadelBrandBlue else PadelSurfaceElevated)
+                                    .border(
+                                        1.dp,
+                                        if (isSelected) PadelBrandBlue else PadelBorderHairline,
+                                        PadelShapes.medium
+                                    )
+                                    .clickable {
+                                        haptics.tick()
+                                        if (viewModel != null) {
+                                            viewModel.setCourtCount(c)
+                                        } else {
+                                            localCourts = c
+                                        }
+                                    }
+                                    .padding(vertical = 8.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = "$c ${if (c == 1) "Ct" else "Cts"}",
+                                    style = PadelTypography.labelSmall.copy(
+                                        color = if (isSelected) PadelOnPrimary else PadelTextPrimary,
+                                        fontWeight = FontWeight.Bold
                                     )
                                 )
                             }

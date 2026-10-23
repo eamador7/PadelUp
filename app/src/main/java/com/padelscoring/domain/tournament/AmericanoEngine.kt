@@ -342,6 +342,18 @@ object AmericanoEngine {
             return cost
         }
 
+        // For large player counts (> 16 players), use multi-restart greedy min-conflict
+        // to prevent combinatorial DFS state explosion and guarantee sub-20ms execution.
+        if (playingPlayers.size > 16) {
+            return solveLargeCourtPartitionsGreedy(
+                playingPlayers,
+                courtCount,
+                partnerCounts,
+                opponentCounts,
+                ::evaluateMatch
+            )
+        }
+
         var bestCost = Long.MAX_VALUE
         var bestMatches: List<MatchPairing>? = null
 
@@ -388,6 +400,89 @@ object AmericanoEngine {
 
         dfs(playingPlayers, emptyList(), 0L)
         return bestMatches ?: fallbackPairing(playingPlayers, courtCount)
+    }
+
+    private fun solveLargeCourtPartitionsGreedy(
+        playingPlayers: List<String>,
+        courtCount: Int,
+        partnerCounts: Map<Pair<String, String>, Int>,
+        opponentCounts: Map<Pair<String, String>, Int>,
+        evaluator: (MatchPairing) -> Long
+    ): List<MatchPairing> {
+        var globalBestMatches: List<MatchPairing>? = null
+        var globalBestCost = Long.MAX_VALUE
+
+        val restarts = 25
+        val rng = java.util.Random(42)
+
+        for (attempt in 0 until restarts) {
+            val unassigned = playingPlayers.toMutableList()
+            // Shuffle with pseudo-random seed per attempt for deterministic diversity
+            unassigned.shuffle(rng)
+
+            val attemptMatches = mutableListOf<MatchPairing>()
+            var attemptCost = 0L
+
+            for (c in 0 until courtCount) {
+                if (unassigned.size < 4) break
+                val p0 = unassigned.removeAt(0)
+
+                // Pick partner with lowest partnership count
+                var bestPartnerIdx = 0
+                var minPartnerCost = Int.MAX_VALUE
+                for (i in unassigned.indices) {
+                    val p = unassigned[i]
+                    val cost = partnerCounts[canonicalPair(p0, p)] ?: 0
+                    if (cost < minPartnerCost) {
+                        minPartnerCost = cost
+                        bestPartnerIdx = i
+                    }
+                }
+                val p1 = unassigned.removeAt(bestPartnerIdx)
+
+                // Pick best pair for team 2 from remaining candidates
+                var bestPairing: MatchPairing? = null
+                var minMatchCost = Long.MAX_VALUE
+                var bestOpponentIndices: Pair<Int, Int>? = null
+
+                val sampleLimit = minOf(unassigned.size, 8)
+                for (i in 0 until sampleLimit) {
+                    for (j in i + 1 until sampleLimit) {
+                        val p2 = unassigned[i]
+                        val p3 = unassigned[j]
+                        val pairing = MatchPairing(p0 to p1, p2 to p3)
+                        val cost = evaluator(pairing)
+                        if (cost < minMatchCost) {
+                            minMatchCost = cost
+                            bestPairing = pairing
+                            bestOpponentIndices = i to j
+                        }
+                    }
+                }
+
+                if (bestPairing != null && bestOpponentIndices != null) {
+                    attemptCost += minMatchCost
+                    attemptMatches.add(bestPairing)
+                    val (idxA, idxB) = bestOpponentIndices
+                    // Remove in descending index order
+                    unassigned.removeAt(maxOf(idxA, idxB))
+                    unassigned.removeAt(minOf(idxA, idxB))
+                } else if (unassigned.size >= 2) {
+                    val p2 = unassigned.removeAt(0)
+                    val p3 = unassigned.removeAt(0)
+                    val fallback = MatchPairing(p0 to p1, p2 to p3)
+                    attemptCost += evaluator(fallback)
+                    attemptMatches.add(fallback)
+                }
+            }
+
+            if (attemptMatches.size == courtCount && attemptCost < globalBestCost) {
+                globalBestCost = attemptCost
+                globalBestMatches = attemptMatches
+            }
+        }
+
+        return globalBestMatches ?: fallbackPairing(playingPlayers, courtCount)
     }
 
     private fun fallbackPairing(players: List<String>, courtCount: Int): List<MatchPairing> {

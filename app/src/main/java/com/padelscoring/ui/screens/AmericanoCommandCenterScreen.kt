@@ -39,10 +39,13 @@ fun AmericanoCommandCenterScreen(
     initialMatchesFinished: Boolean = false,
     onNavigateBack: () -> Unit = {},
     onMatchSelected: (matchId: String) -> Unit = {},
-    onLaunchNewTournament: () -> Unit = {}
+    onLaunchNewTournament: () -> Unit = {},
+    onStartSingleMatch: () -> Unit = {},
+    onStartGroupTournament: () -> Unit = {}
 ) {
     val haptics = rememberPadelHaptics()
     val vmState = viewModel?.uiState?.collectAsState()?.value
+    var showStartActivitySheet by remember { mutableStateOf(false) }
 
     var mockCurrentRound by remember { mutableIntStateOf(initialRound) }
     val mockTotalRounds = 7
@@ -122,20 +125,45 @@ fun AmericanoCommandCenterScreen(
                         )
                     }
 
-                    // Round Pill Badge
-                    Box(
-                        modifier = Modifier
-                            .clip(PadelPillShape)
-                            .background(PadelVoltSubtle)
-                            .padding(horizontal = 12.dp, vertical = 6.dp)
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(
-                            text = "ROUND $currentRound OF $totalRounds",
-                            style = PadelTypography.labelSmall.copy(
-                                color = PadelVolt,
-                                fontWeight = FontWeight.ExtraBold
+                        Box(
+                            modifier = Modifier
+                                .clip(PadelPillShape)
+                                .background(PadelBrandBlue)
+                                .clickable {
+                                    haptics.heavyConfirm()
+                                    showStartActivitySheet = true
+                                }
+                                .padding(horizontal = 10.dp, vertical = 6.dp)
+                        ) {
+                            Text(
+                                text = "⚡ PLAY",
+                                style = PadelTypography.labelSmall.copy(
+                                    color = Color.White,
+                                    fontWeight = FontWeight.ExtraBold,
+                                    fontSize = 10.sp
+                                )
                             )
-                        )
+                        }
+
+                        // Round Pill Badge
+                        Box(
+                            modifier = Modifier
+                                .clip(PadelPillShape)
+                                .background(PadelVoltSubtle)
+                                .padding(horizontal = 12.dp, vertical = 6.dp)
+                        ) {
+                            Text(
+                                text = "ROUND $currentRound OF $totalRounds",
+                                style = PadelTypography.labelSmall.copy(
+                                    color = PadelVolt,
+                                    fontWeight = FontWeight.ExtraBold
+                                )
+                            )
+                        }
                     }
                 }
 
@@ -223,6 +251,16 @@ fun AmericanoCommandCenterScreen(
                     contentPadding = PaddingValues(bottom = 24.dp)
                 ) {
                     if (courtMatches.isNotEmpty()) {
+                        val activeNames = courtMatches.flatMap {
+                            listOf(it.teamANames.first, it.teamANames.second, it.teamBNames.first, it.teamBNames.second)
+                        }.toSet()
+                        val resting = standings.filter { it.name !in activeNames }
+                        if (resting.isNotEmpty()) {
+                            item(key = "resting_banner") {
+                                RestingPlayersCard(restingPlayers = resting.map { it.name })
+                            }
+                        }
+
                         courtMatches.forEach { match ->
                             item(key = match.matchId) {
                                 PadelCourtVisualizerCard(
@@ -326,7 +364,7 @@ fun AmericanoCommandCenterScreen(
                                     text = "⚡ START NEW AMERICANO TOURNAMENT",
                                     onClick = {
                                         haptics.heavyConfirm()
-                                        onLaunchNewTournament()
+                                        showStartActivitySheet = true
                                     },
                                     modifier = Modifier.fillMaxWidth()
                                 )
@@ -463,6 +501,67 @@ fun AmericanoCommandCenterScreen(
                             pointDiff = standing.pointDiff,
                             totalPoints = standing.totalPoints,
                             rankDelta = standing.rankDelta
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    if (showStartActivitySheet) {
+        StartActivityModal(
+            onDismissRequest = { showStartActivitySheet = false },
+            onSelectSingleMatch = onStartSingleMatch,
+            onSelectGroupAmericano = onStartGroupTournament,
+            onSelectGuestAmericano = onLaunchNewTournament
+        )
+    }
+}
+
+@Composable
+private fun RestingPlayersCard(restingPlayers: List<String>) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(PadelCourtCardShape)
+            .background(PadelSurface)
+            .border(1.dp, PadelTurfCyanBorder, PadelCourtCardShape)
+            .padding(14.dp)
+    ) {
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                Text("🔄", fontSize = 13.sp)
+                Text(
+                    text = "RESTING THIS ROUND (BYE)",
+                    style = PadelTypography.labelSmall.copy(
+                        color = PadelTurfCyan,
+                        fontWeight = FontWeight.ExtraBold,
+                        letterSpacing = 1.sp
+                    )
+                )
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                restingPlayers.forEach { name ->
+                    Box(
+                        modifier = Modifier
+                            .clip(PadelPillShape)
+                            .background(PadelTurfCyanSubtle)
+                            .border(1.dp, PadelTurfCyanBorder, PadelPillShape)
+                            .padding(horizontal = 10.dp, vertical = 4.dp)
+                    ) {
+                        Text(
+                            text = name,
+                            style = PadelTypography.labelSmall.copy(
+                                color = PadelTextPrimary,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 11.sp
+                            )
                         )
                     }
                 }

@@ -3,16 +3,31 @@ package com.padelscoring.ui.theme
 import androidx.compose.ui.graphics.Color
 
 // ============================================================================
-// PADEL UP DESIGN SYSTEM - "PADEL COURT ATHLETIC"
-// High-visibility, outdoor sunlight & floodlight-optimized sports palette
+// PADEL UP DESIGN SYSTEM - "PEBBLE ATHLETIC"
+// Signature studio cobalt & cyan palette on deep obsidian chassis
 // ============================================================================
 
-// Electric Court Volt / Lime (The signature accent, high-vis padel ball felt)
-val PadelVolt = Color(0xFFCCFF00)
-val PadelVoltHover = Color(0xFFD8FF33)
-val PadelVoltPressed = Color(0xFFB5E600)
-val PadelVoltSubtle = Color(0x1FCCFF00) // 12% alpha for glows and pill backgrounds
-val PadelVoltBorder = Color(0x66CCFF00) // 40% alpha for active state borders
+// Signature Brand Primary: Vivid Athletic Cobalt / Electric Royal Blue
+val PadelBrandBlue = Color(0xFF2563EB)         // Core athletic cobalt (WCAG AA compliant)
+val PadelBrandBlueHover = Color(0xFF3B82F6)    // Interactive touch highlight
+val PadelBrandBluePressed = Color(0xFF1D4ED8)  // Tactile pressed depth
+val PadelBrandBlueSubtle = Color(0x262563EB)   // 15% alpha for glows and pills
+val PadelBrandBlueBorder = Color(0x662563EB)   // 40% alpha for active borders
+
+// Electric Turf Cyan (High-visibility secondary accent & live status)
+val PadelTurfCyan = Color(0xFF00E5FF)
+val PadelTurfCyanSubtle = Color(0x2600E5FF)
+val PadelTurfCyanBorder = Color(0x6600E5FF)
+
+// Semantic Core Tokens (Replaced neon volt/lime with signature cobalt brand)
+val PadelVolt = PadelBrandBlue
+val PadelVoltHover = PadelBrandBlueHover
+val PadelVoltPressed = PadelBrandBluePressed
+val PadelVoltSubtle = PadelBrandBlueSubtle
+val PadelVoltBorder = PadelBrandBlueBorder
+
+// Text on primary brand buttons
+val PadelOnPrimary = Color(0xFFFFFFFF)
 
 // Court Deep Obsidian / Charcoal Void (Ground & Surfaces)
 val PadelObsidianDarkest = Color(0xFF080B10) // Pure background
