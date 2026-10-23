@@ -43,6 +43,6 @@ sealed class PadelNavigationItem(
     )
 
     companion object {
-        val items: List<PadelNavigationItem> = listOf(Americano, QuickLaunch, Groups, Profile)
+        val items: List<PadelNavigationItem> = listOf(Americano, Groups, Profile)
     }
 }

@@ -13,6 +13,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.padelscoring.ui.components.*
@@ -78,6 +80,8 @@ fun AmericanoCommandCenterScreen(
         )
     }
 
+    val hasActiveTournament = if (viewModel != null) !vmState?.tournamentId.isNullOrEmpty() else true
+
     val tournamentTitle = vmState?.tournamentName ?: "Friday Night Masters"
     val currentRound = vmState?.currentRoundNumber ?: mockCurrentRound
     val totalRounds = vmState?.totalRounds ?: mockTotalRounds
@@ -95,14 +99,14 @@ fun AmericanoCommandCenterScreen(
                     .background(PadelObsidian)
                     .statusBarsPadding()
                     .displayCutoutPadding()
-                    .padding(horizontal = 20.dp, vertical = 16.dp)
+                    .padding(horizontal = 20.dp, vertical = 14.dp)
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Column {
+                    Column(modifier = Modifier.weight(1f, fill = false)) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -118,68 +122,74 @@ fun AmericanoCommandCenterScreen(
                         }
                         Spacer(modifier = Modifier.height(2.dp))
                         Text(
-                            text = tournamentTitle,
+                            text = if (hasActiveTournament) tournamentTitle else "Tournaments & Matches",
                             style = PadelTypography.headlineMedium.copy(
                                 fontWeight = FontWeight.ExtraBold,
                                 color = PadelTextPrimary
-                            )
+                            ),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
                         )
                     }
 
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .clip(PadelPillShape)
-                                .background(PadelBrandBlue)
-                                .clickable {
-                                    haptics.heavyConfirm()
-                                    showStartActivitySheet = true
-                                }
-                                .padding(horizontal = 10.dp, vertical = 6.dp)
+                    if (hasActiveTournament) {
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(
-                                text = "⚡ PLAY",
-                                style = PadelTypography.labelSmall.copy(
-                                    color = Color.White,
-                                    fontWeight = FontWeight.ExtraBold,
-                                    fontSize = 10.sp
+                            Box(
+                                modifier = Modifier
+                                    .clip(PadelPillShape)
+                                    .background(PadelBrandBlue)
+                                    .clickable {
+                                        haptics.heavyConfirm()
+                                        showStartActivitySheet = true
+                                    }
+                                    .padding(horizontal = 10.dp, vertical = 6.dp)
+                            ) {
+                                Text(
+                                    text = "⚡ PLAY",
+                                    style = PadelTypography.labelSmall.copy(
+                                        color = Color.White,
+                                        fontWeight = FontWeight.ExtraBold,
+                                        fontSize = 10.sp
+                                    )
                                 )
-                            )
-                        }
+                            }
 
-                        // Round Pill Badge
-                        Box(
-                            modifier = Modifier
-                                .clip(PadelPillShape)
-                                .background(PadelVoltSubtle)
-                                .padding(horizontal = 12.dp, vertical = 6.dp)
-                        ) {
-                            Text(
-                                text = "ROUND $currentRound OF $totalRounds",
-                                style = PadelTypography.labelSmall.copy(
-                                    color = PadelVolt,
-                                    fontWeight = FontWeight.ExtraBold
+                            // Round Pill Badge
+                            Box(
+                                modifier = Modifier
+                                    .clip(PadelPillShape)
+                                    .background(PadelVoltSubtle)
+                                    .padding(horizontal = 12.dp, vertical = 6.dp)
+                            ) {
+                                Text(
+                                    text = "ROUND $currentRound OF $totalRounds",
+                                    style = PadelTypography.labelSmall.copy(
+                                        color = PadelVolt,
+                                        fontWeight = FontWeight.ExtraBold
+                                    )
                                 )
-                            )
+                            }
                         }
                     }
                 }
 
-                Spacer(modifier = Modifier.height(14.dp))
+                if (hasActiveTournament) {
+                    Spacer(modifier = Modifier.height(14.dp))
 
-                // Progress Bar
-                LinearProgressIndicator(
-                    progress = { (currentRound.toFloat() / totalRounds.toFloat()).coerceIn(0f, 1f) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(6.dp)
-                        .clip(PadelPillShape),
-                    color = PadelVolt,
-                    trackColor = PadelBorderHairline
-                )
+                    // Progress Bar
+                    LinearProgressIndicator(
+                        progress = { (currentRound.toFloat() / totalRounds.toFloat()).coerceIn(0f, 1f) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(6.dp)
+                            .clip(PadelPillShape),
+                        color = PadelVolt,
+                        trackColor = PadelBorderHairline
+                    )
+                }
             }
         }
     ) { innerPadding ->
@@ -188,59 +198,202 @@ fun AmericanoCommandCenterScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            // Tab Selector: Courts vs Leaderboard
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 20.dp, vertical = 12.dp)
-                    .clip(PadelShapes.medium)
-                    .background(PadelSurface)
-                    .padding(4.dp)
-            ) {
-                Box(
+            if (!hasActiveTournament) {
+                // Dedicated Clean Empty State Hub
+                LazyColumn(
                     modifier = Modifier
-                        .weight(1f)
-                        .clip(PadelShapes.small)
-                        .background(if (selectedTab == 0) PadelVolt else PadelSurface)
-                        .clickable {
-                            haptics.tick()
-                            selectedTab = 0
-                        }
-                        .padding(vertical = 10.dp),
-                    contentAlignment = Alignment.Center
+                        .fillMaxSize()
+                        .padding(horizontal = 20.dp),
+                    verticalArrangement = Arrangement.spacedBy(14.dp),
+                    contentPadding = PaddingValues(top = 16.dp, bottom = 32.dp)
                 ) {
-                    Text(
-                        text = "ACTIVE COURTS",
-                        style = PadelTypography.labelLarge.copy(
-                            color = if (selectedTab == 0) PadelTextInverse else PadelTextSecondary,
-                            fontWeight = FontWeight.ExtraBold,
-                            fontSize = 12.sp
-                        )
-                    )
-                }
+                    item {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(PadelCourtCardShape)
+                                .background(PadelSurface)
+                                .border(1.dp, PadelBrandBlueBorder, PadelCourtCardShape)
+                                .padding(20.dp),
+                            verticalArrangement = Arrangement.spacedBy(14.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    PadelRacketIcon(size = 20.dp)
+                                    Text(
+                                        text = "READY TO PLAY?",
+                                        style = PadelTypography.labelSmall.copy(
+                                            color = PadelBrandBlue,
+                                            fontWeight = FontWeight.ExtraBold,
+                                            letterSpacing = 1.sp
+                                        )
+                                    )
+                                }
+                                Box(
+                                    modifier = Modifier
+                                        .clip(PadelPillShape)
+                                        .background(PadelBrandBlueSubtle)
+                                        .padding(horizontal = 10.dp, vertical = 4.dp)
+                                ) {
+                                    Text(
+                                        text = "STANDBY",
+                                        style = PadelTypography.labelSmall.copy(
+                                            color = PadelBrandBlue,
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 10.sp
+                                        )
+                                    )
+                                }
+                            }
 
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .clip(PadelShapes.small)
-                        .background(if (selectedTab == 1) PadelVolt else PadelSurface)
-                        .clickable {
-                            haptics.tick()
-                            selectedTab = 1
+                            Text(
+                                text = "NO ACTIVE TOURNAMENT",
+                                style = PadelTypography.titleLarge.copy(
+                                    fontWeight = FontWeight.ExtraBold,
+                                    color = PadelTextPrimary
+                                )
+                            )
+
+                            Text(
+                                text = "Start a 2v2 match or launch an Americano tournament rotation in seconds.",
+                                style = PadelTypography.bodyMedium.copy(
+                                    color = PadelTextSecondary,
+                                    textAlign = TextAlign.Center
+                                )
+                            )
+
+                            Spacer(modifier = Modifier.height(4.dp))
+
+                            PadelPrimaryButton(
+                                text = "⚡ START ACTIVITY",
+                                onClick = {
+                                    haptics.heavyConfirm()
+                                    showStartActivitySheet = true
+                                },
+                                modifier = Modifier.fillMaxWidth()
+                            )
                         }
-                        .padding(vertical = 10.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "LIVE STANDINGS",
-                        style = PadelTypography.labelLarge.copy(
-                            color = if (selectedTab == 1) PadelTextInverse else PadelTextSecondary,
-                            fontWeight = FontWeight.ExtraBold,
-                            fontSize = 12.sp
+                    }
+
+                    item {
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "QUICK START OPTIONS",
+                            style = PadelTypography.labelSmall.copy(
+                                color = PadelTextMuted,
+                                letterSpacing = 1.sp,
+                                fontWeight = FontWeight.Bold
+                            )
                         )
-                    )
+                    }
+
+                    item {
+                        EmptyStateActionCard(
+                            emoji = "🎾",
+                            title = "Single Match (2v2)",
+                            badge = "REGULATION",
+                            badgeColor = PadelTurfCyan,
+                            badgeBg = PadelTurfCyanSubtle,
+                            subtitle = "Sets, games, Punto de Oro and advantage scoring.",
+                            onClick = {
+                                haptics.heavyConfirm()
+                                onStartSingleMatch()
+                            }
+                        )
+                    }
+
+                    item {
+                        EmptyStateActionCard(
+                            emoji = "⚡",
+                            title = "Guest Americano",
+                            badge = "4–32 PLAYERS",
+                            badgeColor = PadelBrandBlue,
+                            badgeBg = PadelBrandBlueSubtle,
+                            subtitle = "Fast offline rotation on this device with auto-courts.",
+                            onClick = {
+                                haptics.heavyConfirm()
+                                onLaunchNewTournament()
+                            }
+                        )
+                    }
+
+                    item {
+                        EmptyStateActionCard(
+                            emoji = "🏆",
+                            title = "Club Squad Americano",
+                            badge = "RANKED",
+                            badgeColor = PadelAmberTiebreak,
+                            badgeBg = PadelAmberSubtle,
+                            subtitle = "Synced with club members and group Elo leaderboards.",
+                            onClick = {
+                                haptics.heavyConfirm()
+                                onStartGroupTournament()
+                            }
+                        )
+                    }
                 }
-            }
+            } else {
+                // Tab Selector: Courts vs Leaderboard
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp, vertical = 12.dp)
+                        .clip(PadelShapes.medium)
+                        .background(PadelSurface)
+                        .padding(4.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(PadelShapes.small)
+                            .background(if (selectedTab == 0) PadelVolt else PadelSurface)
+                            .clickable {
+                                haptics.tick()
+                                selectedTab = 0
+                            }
+                            .padding(vertical = 10.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "ACTIVE COURTS",
+                            style = PadelTypography.labelLarge.copy(
+                                color = if (selectedTab == 0) PadelOnPrimary else PadelTextSecondary,
+                                fontWeight = FontWeight.ExtraBold,
+                                fontSize = 12.sp
+                            )
+                        )
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(PadelShapes.small)
+                            .background(if (selectedTab == 1) PadelVolt else PadelSurface)
+                            .clickable {
+                                haptics.tick()
+                                selectedTab = 1
+                            }
+                            .padding(vertical = 10.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "LIVE STANDINGS",
+                            style = PadelTypography.labelLarge.copy(
+                                color = if (selectedTab == 1) PadelOnPrimary else PadelTextSecondary,
+                                fontWeight = FontWeight.ExtraBold,
+                                fontSize = 12.sp
+                            )
+                        )
+                    }
+                }
 
             if (selectedTab == 0) {
                 // Active Courts View
@@ -518,6 +671,7 @@ fun AmericanoCommandCenterScreen(
         )
     }
 }
+}
 
 @Composable
 private fun RestingPlayersCard(restingPlayers: List<String>) {
@@ -566,6 +720,88 @@ private fun RestingPlayersCard(restingPlayers: List<String>) {
                         )
                     }
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun EmptyStateActionCard(
+    emoji: String,
+    title: String,
+    badge: String,
+    badgeColor: Color,
+    badgeBg: Color,
+    subtitle: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(PadelCourtCardShape)
+            .background(PadelSurface)
+            .border(1.dp, PadelBorderHairline, PadelCourtCardShape)
+            .clickable(onClick = onClick)
+            .padding(16.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(14.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(46.dp)
+                    .clip(PadelShapes.medium)
+                    .background(PadelSurfaceElevated)
+                    .border(1.dp, PadelBorderHairline, PadelShapes.medium),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(text = emoji, fontSize = 22.sp)
+            }
+
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = title,
+                        style = PadelTypography.titleSmall.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = PadelTextPrimary
+                        )
+                    )
+                    Box(
+                        modifier = Modifier
+                            .clip(PadelPillShape)
+                            .background(badgeBg)
+                            .padding(horizontal = 8.dp, vertical = 2.dp)
+                    ) {
+                        Text(
+                            text = badge,
+                            style = PadelTypography.labelSmall.copy(
+                                color = badgeColor,
+                                fontWeight = FontWeight.ExtraBold,
+                                fontSize = 9.sp,
+                                letterSpacing = 0.5.sp
+                            )
+                        )
+                    }
+                }
+                Text(
+                    text = subtitle,
+                    style = PadelTypography.bodySmall.copy(
+                        color = PadelTextSecondary
+                    ),
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
             }
         }
     }
